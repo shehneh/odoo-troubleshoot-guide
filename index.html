@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>راهنمای رفع مشکلات Odoo 19</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 50px;
+            padding: 15px 30px;
+            margin: 30px auto;
+            max-width: 700px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            font-size: 1.1em;
+            outline: none;
+            font-family: inherit;
+            direction: rtl;
+        }
+        
+        .search-box input::placeholder {
+            color: #999;
+        }
+        
+        .search-icon {
+            font-size: 1.5em;
+            color: #667eea;
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            display: none;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+        }
+        
+        .results-info {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .problem-card {
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .problem-card.hidden {
+            display: none;
+        }
+        
+        .problem-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .problem-header.success {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+        }
+        
+        .problem-header.warning {
+            background: linear-gradient(135deg, #f39c12, #d68910);
+        }
+        
+        .problem-header.info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .problem-header h3 {
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle-icon {
+            font-size: 1.5em;
+            transition: transform 0.3s;
+        }
+        
+        .problem-card.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .problem-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s, padding 0.3s;
+        }
+        
+        .problem-card.open .problem-content {
+            padding: 25px;
+            max-height: 2000px;
+        }
+        
+        .error-box {
+            background: #fdf2f2;
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            direction: ltr;
+            text-align: left;
+            color: #c0392b;
+            word-break: break-all;
+        }
+        
+        .solution-section {
+            margin-top: 20px;
+        }
+        
+        .solution-section h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px 15px 15px 80px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            direction: ltr;
+            text-align: left;
+            overflow-x: auto;
+            position: relative;
+            margin: 10px 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        
+        .copy-btn:hover {
+            background: #5a6fd6;
+        }
+        
+        .copy-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #e8f4fd;
+            color: #2980b9;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin: 2px;
+        }
+        
+        .keywords {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .link-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .link-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            opacity: 0.8;
+        }
+        
+        .match-highlight {
+            background: #ffeb3b;
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: white;
+            padding: 50px;
+            font-size: 1.3em;
+        }
+        
+        .no-results-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .quick-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .quick-link {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .quick-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+            .search-box {
+                padding: 10px 20px;
+            }
+            .problem-header h3 {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 راهنمای رفع مشکلات Odoo 19</h1>
+            <p>خطای خود را جستجو کنید یا از لیست زیر انتخاب نمایید</p>
+        </header>
+
+        <!-- بخش معرفی و نگاه کلی -->
+        <div style="background: white; border-radius: 15px; padding: 25px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);">
+            <h2 style="color: #667eea; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                🎯 چرا این خطاها پیش می‌آیند؟
+            </h2>
+            
+            <p style="line-height: 2; margin-bottom: 20px; color: #444;">
+                Odoo یک نرم‌افزار ERP (مدیریت منابع سازمانی) است که برای کار کردن به <strong>دو بخش اصلی</strong> نیاز دارد:
+            </p>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 25px;">
+                <div style="flex: 1; min-width: 280px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 10px;">1️⃣ Odoo Server</h3>
+                    <p style="font-size: 0.95em; opacity: 0.9;">برنامه اصلی که از طریق مرورگر به آن دسترسی دارید (پورت 8069)</p>
+                </div>
+                <div style="flex: 1; min-width: 280px; background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 20px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 10px;">2️⃣ PostgreSQL Database</h3>
+                    <p style="font-size: 0.95em; opacity: 0.9;">دیتابیس که اطلاعات شما را ذخیره می‌کند (پورت 5432)</p>
+                </div>
+            </div>
+            
+            <h3 style="color: #e74c3c; margin-bottom: 15px;">❌ دلایل اصلی خطاها:</h3>
+            
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 20px;">
+                <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ddd;">
+                    <span style="background: #e74c3c; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">1</span>
+                    <div>
+                        <strong>PostgreSQL نصب نیست:</strong>
+                        <p style="color: #666; margin-top: 5px;">نصب‌کننده Odoo، PostgreSQL را نصب نمی‌کند! باید جداگانه نصب شود.</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ddd;">
+                    <span style="background: #f39c12; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">2</span>
+                    <div>
+                        <strong>کاربر دیتابیس ساخته نشده:</strong>
+                        <p style="color: #666; margin-top: 5px;">Odoo به یک کاربر PostgreSQL با دسترسی ساخت دیتابیس نیاز دارد.</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ddd;">
+                    <span style="background: #9b59b6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">3</span>
+                    <div>
+                        <strong>رمزها مطابقت ندارند:</strong>
+                        <p style="color: #666; margin-top: 5px;">رمز کاربر در PostgreSQL با رمز نوشته شده در فایل odoo.conf باید یکی باشد.</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ddd;">
+                    <span style="background: #27ae60; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">4</span>
+                    <div>
+                        <strong>Master Password رمزنگاری شده:</strong>
+                        <p style="color: #666; margin-top: 5px;">
+                            Odoo به صورت خودکار رمز را هش می‌کند و شما رمز اصلی را نمی‌دانید.
+                            <br><a href="#restart-after-refresh" style="color:#e74c3c; font-weight:bold; text-decoration:none; display:inline-block; margin-top:8px; background:#ffebee; padding:5px 12px; border-radius:5px;">📖 راهنمای کامل حل مشکل</a>
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <span style="background: #3498db; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">5</span>
+                    <div>
+                        <strong>سرویس ری‌استارت نشده:</strong>
+                        <p style="color: #666; margin-top: 5px;">
+                            بعد از هر تغییر در odoo.conf، سرویس باید ری‌استارت شود.
+                            <br><a href="#restart-service" style="color:#e74c3c; font-weight:bold; text-decoration:none; display:inline-block; margin-top:8px; background:#ffebee; padding:5px 12px; border-radius:5px;">📖 راهنمای ری‌استارت سرویس</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; padding: 20px; border-radius: 10px; margin-top: 25px;">
+                <h3 style="margin-bottom: 10px;">✅ خلاصه راه حل:</h3>
+                <ol style="margin-right: 20px; line-height: 2.2;">
+                    <li>PostgreSQL را نصب کنید</li>
+                    <li>در pgAdmin یک کاربر به نام <code style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:3px;">odoo</code> با رمز <code style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:3px;">odoo123</code> بسازید</li>
+                    <li>فایل odoo.conf را تنظیم کنید</li>
+                    <li>سرویس Odoo را ری‌استارت کنید</li>
+                    <li>از آدرس http://localhost:8069 وارد شوید</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="متن خطا یا مشکل را اینجا کپی کنید...">
+            <button class="clear-btn" id="clearBtn" onclick="clearSearch()">پاک کردن</button>
+            <button id="exactSearchBtn" onclick="exactSearch()" style="background:linear-gradient(135deg,#27ae60,#1e8449); color:white; border:none; padding:10px 20px; border-radius:25px; cursor:pointer; font-family:inherit; margin-right:10px; white-space:nowrap;">🎯 جستجوی دقیق</button>
+        </div>
+
+        <div class="quick-links">
+            <span class="quick-link" onclick="filterByTag('نکات کلیدی')" style="background:rgba(39,174,96,0.4);">📚 نکات کلیدی</span>
+            <a href="#auto-setup-wizard" class="quick-link" style="background:rgba(142,68,173,0.5); text-decoration:none;">🤖 نصب خودکار</a>
+            <a href="#restart-service" class="quick-link" style="background:rgba(231,76,60,0.4); text-decoration:none;">🔄 ری‌استارت سرویس</a>
+            <span class="quick-link" onclick="filterByTag('master password')">Master Password</span>
+            <span class="quick-link" onclick="filterByTag('postgresql')">PostgreSQL</span>
+            <span class="quick-link" onclick="filterByTag('authentication failed')">authentication failed</span>
+            <span class="quick-link" onclick="filterByTag('openpg')">openpg</span>
+            <span class="quick-link" onclick="filterByTag('connection')">اتصال</span>
+            <span class="quick-link" onclick="filterByTag('access denied')">Access Denied</span>
+        </div>
+
+        <div class="results-info" id="resultsInfo"></div>
+
+        <div id="problemsList">
+
+            <!-- ویزارد نصب خودکار -->
+            <div id="auto-setup-wizard" class="problem-card" data-keywords="نصب خودکار automatic setup wizard install ویزارد راه اندازی powershell script اسکریپت">
+                <div class="problem-header" style="background:linear-gradient(135deg, #8e44ad, #9b59b6);">
+                    <h3>🤖 نصب و راه‌اندازی خودکار Odoo</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div style="background:linear-gradient(135deg, #667eea, #764ba2); color:white; padding:25px; border-radius:15px; margin-bottom:30px;">
+                        <h2 style="margin:0 0 15px 0; font-size:1.8em;">✨ راه‌حل هوشمند: اسکریپت خودکار!</h2>
+                        <p style="font-size:1.1em; line-height:2; margin:0;">
+                            به جای انجام دستی تمام مراحل، یک فایل PowerShell آماده شده که همه کارها رو خودکار انجام میده!
+                        </p>
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h3 style="color:#8e44ad;">🎯 این اسکریپت چه کارهایی انجام می‌دهد؟</h3>
+                        
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:15px; margin:20px 0;">
+                            <div style="background:#f0f3ff; padding:20px; border-radius:10px; border-right:4px solid #667eea;">
+                                <h4 style="color:#667eea; margin:0 0 10px 0;">✅ بررسی PostgreSQL</h4>
+                                <p style="margin:0; color:#666;">چک می‌کند PostgreSQL نصب و اجراست یا نه</p>
+                            </div>
+                            <div style="background:#fff0f6; padding:20px; border-radius:10px; border-right:4px solid #e91e63;">
+                                <h4 style="color:#e91e63; margin:0 0 10px 0;">👤 ساخت کاربر دیتابیس</h4>
+                                <p style="margin:0; color:#666;">خودکار کاربر odoo یا openpg را می‌سازد</p>
+                            </div>
+                            <div style="background:#e8f5e9; padding:20px; border-radius:10px; border-right:4px solid #4caf50;">
+                                <h4 style="color:#4caf50; margin:0 0 10px 0;">⚙️ تنظیم odoo.conf</h4>
+                                <p style="margin:0; color:#666;">تمام تنظیمات را به‌درستی پیکربندی می‌کند</p>
+                            </div>
+                            <div style="background:#fff8e1; padding:20px; border-radius:10px; border-right:4px solid#ff9800;">
+                                <h4 style="color:#ff9800; margin:0 0 10px 0;">🔄 ری‌استارت سرویس</h4>
+                                <p style="margin:0; color:#666;">سرویس Odoo را ری‌استارت و آماده می‌کند</p>
+                            </div>
+                        </div>
+                        
+                        <h3 style="color:#8e44ad; margin-top:40px;">📥 دانلود و اجرای اسکریپت</h3>
+                        
+                        <div style="background:#fdf2f8; padding:25px; border-radius:15px; border:2px solid #ec4899; margin:20px 0;">
+                            <h4 style="color:#be185d; margin-top:0;">📂 فایل اسکریپت:</h4>
+                            <p style="font-size:1.1em; margin:15px 0;">
+                                فایل <strong>Odoo-Auto-Setup.ps1</strong> در Desktop شما ذخیره شده است:
+                            </p>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                C:\Users\mali2\Desktop\Odoo-Auto-Setup.ps1
+                            </div>
+                        </div>
+                        
+                        <h3 style="color:#e74c3c;">⚡ نحوه اجرا (فقط 3 قدم!):</h3>
+                        
+                        <div class="step">
+                            <div class="step-number" style="background:#8e44ad;">1</div>
+                            <div class="step-content">
+                                <p><strong>فایل را پیدا کنید:</strong></p>
+                                <p>به Desktop بروید و فایل <code>Odoo-Auto-Setup.ps1</code> را پیدا کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number" style="background:#8e44ad;">2</div>
+                            <div class="step-content">
+                                <p><strong>با Admin اجرا کنید:</strong></p>
+                                <p>روی فایل <strong>راست‌کلیک</strong> کنید → <strong>Run with PowerShell</strong></p>
+                                <p style="color:#e74c3c; margin-top:10px;">⚠️ اگر خطای دسترسی داد:</p>
+                                <p>راست‌کلیک → <strong>Properties</strong> → تیک <strong>Unblock</strong> را بزنید → OK</p>
+                                <p>دوباره راست‌کلیک → <strong>Run with PowerShell</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number" style="background:#8e44ad;">3</div>
+                            <div class="step-content">
+                                <p><strong>سوالات را جواب دهید:</strong></p>
+                                <p>اسکریپت چند سوال می‌پرسد:</p>
+                                <ul style="margin-right:20px; line-height:2.5;">
+                                    <li>نسخه Odoo: <code>1</code> برای Community یا <code>2</code> برای Enterprise</li>
+                                    <li>رمز PostgreSQL: رمزی که موقع نصب تعیین کردید</li>
+                                    <li>باز کردن مرورگر: <code>Y</code> برای بله</li>
+                                </ul>
+                                <p style="color:#27ae60; font-weight:bold; margin-top:15px;">✅ همین! بقیه کارها خودکار انجام می‌شود!</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background:#e8f5e9; padding:25px; border-radius:15px; border-right:5px solid #4caf50; margin-top:30px;">
+                            <h4 style="color:#2e7d32; margin-top:0;">💡 بعد از اجرای موفق:</h4>
+                            <p style="line-height:2;">
+                                ✅ PostgreSQL چک و روشن می‌شود<br>
+                                ✅ کاربر دیتابیس ساخته می‌شود<br>
+                                ✅ فایل odoo.conf تنظیم می‌شود (نسخه backup هم ذخیره می‌شود)<br>
+                                ✅ سرویس Odoo ری‌استارت می‌شود<br>
+                                ✅ اطلاعات دسترسی (Master Password، کاربر دیتابیس و...) نمایش داده می‌شود<br>
+                                ✅ مرورگر باز می‌شود و آماده ساخت دیتابیس هستید!
+                            </p>
+                        </div>
+                        
+                        <h3 style="color:#8e44ad; margin-top:40px;">🛠️ روش دستی (اگر اسکریپت کار نکرد)</h3>
+                        
+                        <div style="background:#fff3cd; padding:20px; border-radius:10px; margin:20px 0;">
+                            <p style="margin:0; line-height:2;">
+                                اگر اسکریپت PowerShell اجرا نشد یا خطا داد، می‌توانید به‌صورت دستی مراحل زیر را دنبال کنید:
+                            </p>
+                        </div>
+                        
+                        <div style="text-align:center; margin:30px 0;">
+                            <a href="#postgresql-install" style="display:inline-block; background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:15px 30px; border-radius:30px; text-decoration:none; font-size:1.1em; box-shadow:0 5px 15px rgba(102,126,234,0.3);">
+                                📚 مراحل نصب دستی →
+                            </a>
+                        </div>
+                        
+                        <h3 style="color:#e74c3c; margin-top:40px;">❓ سوالات متداول</h3>
+                        
+                        <div style="background:#f8f9fa; padding:20px; border-radius:10px; margin:15px 0;">
+                            <h4 style="color:#495057; margin-top:0;">❓ اسکریپت خطای "Execution Policy" می‌دهد</h4>
+                            <p><strong>راه حل:</strong> PowerShell (Admin) باز کنید و این دستور را اجرا کنید:</p>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+                            </div>
+                            <p style="margin-top:10px;">سپس دوباره اسکریپت را اجرا کنید.</p>
+                        </div>
+                        
+                        <div style="background:#f8f9fa; padding:20px; border-radius:10px; margin:15px 0;">
+                            <h4 style="color:#495057; margin-top:0;">❓ PostgreSQL نصب نیست، اسکریپت چه کار می‌کند؟</h4>
+                            <p>اسکریپت شما را راهنمایی می‌کند که PostgreSQL را نصب کنید و لینک دانلود می‌دهد. بعد از نصب، Enter بزنید تا ادامه پیدا کند.</p>
+                        </div>
+                        
+                        <div style="background:#f8f9fa; padding:20px; border-radius:10px; margin:15px 0;">
+                            <h4 style="color:#495057; margin-top:0;">❓ رمز PostgreSQL را فراموش کرده‌ام</h4>
+                            <p>باید PostgreSQL را uninstall و دوباره نصب کنید. یا از pgAdmin با روش Trusted Authentication وصل شوید.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">نصب خودکار</span>
+                        <span class="tag">PowerShell Script</span>
+                        <span class="tag">Wizard</span>
+                        <span class="tag">Setup</span>
+                        <span class="tag">Installation</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نکات کلیدی -->
+            <div class="problem-card" data-keywords="نکات کلیدی پیش نیاز آموزش مبتدی شروع راهنما odoo.conf تنظیمات فایل کانفیگ config powershell admin notepad ذخیره">
+                <div class="problem-header success">
+                    <h3>📚 نکات کلیدی قبل از شروع (حتماً بخوانید!)</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="solution-section">
+                        <h4>📁 فایل تنظیمات Odoo کجاست؟</h4>
+                        <p style="background:#e8f4fd; padding:15px; border-radius:8px; margin-bottom:20px;">
+                            فایل <code>odoo.conf</code> فایل اصلی تنظیمات Odoo است. مسیر آن:
+                        </p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                            C:\Program Files\Odoo 19.0.20251210\server\odoo.conf
+                        </div>
+                        
+                        <h4 style="margin-top:30px;">📝 چطور فایل odoo.conf را باز کنم؟</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p>کلید <strong>Win + R</strong> را همزمان فشار دهید.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p>این متن را کپی و در کادر Paste کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    notepad "C:\Program Files\Odoo 19.0.20251210\server\odoo.conf"
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p>Enter بزنید. فایل در Notepad باز می‌شود.</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top:30px;">💾 چطور فایل را ذخیره کنم؟</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p>بعد از تغییرات، کلید <strong>Ctrl + S</strong> را بزنید.</p>
+                                <p style="color:#e74c3c;">🔴 اگر خطای "Access Denied" داد، Notepad را ببندید و با راست‌کلیک → <strong>Run as Administrator</strong> باز کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top:30px;">⚡ چطور PowerShell را با دسترسی Admin باز کنم؟</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>روش ۱:</strong> کلید <strong>Win + X</strong> را بزنید، سپس <strong>Windows PowerShell (Admin)</strong> یا <strong>Terminal (Admin)</strong> را انتخاب کنید.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>روش ۲:</strong> در Start Menu بنویسید <code>powershell</code>، روی نتیجه راست‌کلیک کنید و <strong>Run as Administrator</strong> را بزنید.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p>اگر پیام "Do you want to allow..." آمد، روی <strong>Yes</strong> کلیک کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top:30px;">🔄 دستور ری‌استارت سرویس Odoo:</h4>
+                        <p>بعد از هر تغییر در فایل odoo.conf، باید سرویس را ری‌استارت کنید:</p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                            Restart-Service "odoo-server-19.0"
+                        </div>
+                        <p style="color:#888; margin-top:10px;">📌 این دستور را در PowerShell (Admin) اجرا کنید.</p>
+                        
+                        <h4 style="margin-top:30px;">🔐 مشکل رمزنگاری خودکار (هش شدن رمز):</h4>
+                        <p style="background:#fdf2f2; padding:15px; border-radius:8px; border:2px solid #e74c3c; margin-bottom:15px;">
+                            <strong style="color:#e74c3c;">⚠️ نکته مهم:</strong><br>
+                            وقتی Odoo اجرا می‌شود، رمز <code>admin_passwd</code> را به صورت خودکار رمزنگاری (هش) می‌کند!<br><br>
+                            یعنی اگر بنویسید: <code>admin_passwd = admin</code><br>
+                            بعد از اجرا تبدیل می‌شود به: <code>admin_passwd = $pbkdf2-sha512$600000$xxx...</code><br><br>
+                            <strong style="color:#27ae60;">✅ راه حل:</strong> هر بار که رمز را فراموش کردید، فایل را باز کنید، خط هش شده را پاک کنید و رمز ساده بنویسید.
+                        </p>
+                        
+                        <h4 style="margin-top:30px;">📋 تنظیمات مهم فایل odoo.conf:</h4>
+                        
+                        <p style="background:#e74c3c; color:white; padding:15px; border-radius:8px; margin-bottom:20px;">
+                            <strong>⚠️ مهم! دو نوع رمز داریم که کاملاً متفاوت هستند:</strong>
+                        </p>
+                        
+                        <div style="display:flex; flex-wrap:wrap; gap:20px; margin-bottom:25px;">
+                            <div style="flex:1; min-width:280px; background:#f8f9fa; padding:20px; border-radius:10px; border-right:5px solid #667eea;">
+                                <h4 style="color:#667eea; margin-bottom:10px;">🔑 Master Password</h4>
+                                <p style="margin-bottom:10px;"><strong>تنظیم:</strong> <code>admin_passwd</code></p>
+                                <p style="margin-bottom:10px;"><strong>کاربرد:</strong> ساخت/حذف دیتابیس در صفحه Odoo</p>
+                                <p><strong>پیش‌فرض:</strong> Odoo خودش تولید می‌کند یا <code>admin</code></p>
+                            </div>
+                            <div style="flex:1; min-width:280px; background:#f8f9fa; padding:20px; border-radius:10px; border-right:5px solid #27ae60;">
+                                <h4 style="color:#27ae60; margin-bottom:10px;">🗄️ رمز دیتابیس</h4>
+                                <p style="margin-bottom:10px;"><strong>تنظیم:</strong> <code>db_user</code> و <code>db_password</code></p>
+                                <p style="margin-bottom:10px;"><strong>کاربرد:</strong> اتصال Odoo به PostgreSQL</p>
+                                <p><strong>پیش‌فرض:</strong> باید در PostgreSQL بسازید</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#667eea;">نسخه عمومی (Community):</h4>
+                        <table style="width:100%; border-collapse:collapse; margin:10px 0 25px 0;">
+                            <tr style="background:#667eea; color:white;">
+                                <th style="padding:10px; text-align:right;">تنظیم</th>
+                                <th style="padding:10px; text-align:right;">مقدار</th>
+                                <th style="padding:10px; text-align:right;">توضیح</th>
+                            </tr>
+                            <tr style="background:#f8f9fa;">
+                                <td style="padding:10px; border:1px solid #ddd;"><code>admin_passwd</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>admin</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;">Master Password</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>db_user</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>odoo</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;">نام کاربر PostgreSQL</td>
+                            </tr>
+                            <tr style="background:#f8f9fa;">
+                                <td style="padding:10px; border:1px solid #ddd;"><code>db_password</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>odoo123</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;">رمز کاربر PostgreSQL</td>
+                            </tr>
+                        </table>
+                        
+                        <h4 style="color:#9b59b6;">نسخه سازمانی (Enterprise):</h4>
+                        <table style="width:100%; border-collapse:collapse; margin:10px 0 25px 0;">
+                            <tr style="background:#9b59b6; color:white;">
+                                <th style="padding:10px; text-align:right;">تنظیم</th>
+                                <th style="padding:10px; text-align:right;">مقدار</th>
+                                <th style="padding:10px; text-align:right;">توضیح</th>
+                            </tr>
+                            <tr style="background:#f8f9fa;">
+                                <td style="padding:10px; border:1px solid #ddd;"><code>admin_passwd</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;">تولید خودکار (مثل <code>kg68-xj67-2sna</code>)</td>
+                                <td style="padding:10px; border:1px solid #ddd;">Master Password - در پیام زرد نشان داده می‌شود</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>db_user</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>openpg</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;">نام کاربر PostgreSQL</td>
+                            </tr>
+                            <tr style="background:#f8f9fa;">
+                                <td style="padding:10px; border:1px solid #ddd;"><code>db_password</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;"><code>openpgpwd</code></td>
+                                <td style="padding:10px; border:1px solid #ddd;">رمز کاربر PostgreSQL</td>
+                            </tr>
+                        </table>
+                        
+                        <p style="background:#fff3cd; padding:15px; border-radius:8px;">
+                            <strong>📌 خلاصه:</strong><br>
+                            • <strong>نسخه عمومی:</strong> کاربر <code>odoo</code> با رمز <code>odoo123</code> بسازید<br>
+                            • <strong>نسخه سازمانی:</strong> کاربر <code>openpg</code> با رمز <code>openpgpwd</code> بسازید<br>
+                            • <strong>Master Password:</strong> در پیام زرد صفحه نشان داده می‌شود یا <code>admin</code> تنظیم کنید
+                        </p>
+                        
+                        <h4 style="margin-top:30px;">🌐 آدرس Odoo:</h4>
+                        <p>بعد از نصب، Odoo را از این آدرس باز کنید:</p>
+                        <a href="http://localhost:8069" target="_blank" class="link-btn">🔗 http://localhost:8069</a>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">نکات کلیدی</span>
+                        <span class="tag">odoo.conf</span>
+                        <span class="tag">PowerShell</span>
+                        <span class="tag">تنظیمات</span>
+                        <span class="tag">مبتدی</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- مشکل 1: PostgreSQL نصب نیست -->
+            <div class="problem-card" data-keywords="connection refused 10061 0x0000274D port 5432 localhost postgresql postgres server not running tcp/ip connections database creation error نصب پستگرس دیتابیس">
+                <div class="problem-header">
+                    <h3>🔴 PostgreSQL نصب نیست یا اجرا نمی‌شود</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        Database creation error: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061) Is the server running on that host and accepting TCP/IP connections?
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>✅ راه حل کامل (مرحله به مرحله):</h4>
+                        
+                        <h4 style="color:#e74c3c; margin-top:25px;">📥 بخش اول: دانلود و نصب PostgreSQL</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>دانلود PostgreSQL:</strong></p>
+                                <p>روی لینک زیر کلیک کنید:</p>
+                                <a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads" target="_blank" class="link-btn">📥 دانلود PostgreSQL از EDB</a>
+                                <p style="margin-top:15px;">📌 <strong>نسخه 15 یا 16</strong> را برای <strong>Windows x86-64</strong> دانلود کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>اجرای فایل نصب:</strong></p>
+                                <p>فایل دانلود شده را اجرا کنید (مثلاً: <code>postgresql-16.x-windows-x64.exe</code>)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>مراحل نصب:</strong></p>
+                                <ul style="margin-right: 20px; line-height: 2.5;">
+                                    <li>✅ روی <strong>Next</strong> کلیک کنید</li>
+                                    <li>✅ مسیر نصب را تغییر ندهید → <strong>Next</strong></li>
+                                    <li>✅ همه گزینه‌ها تیک‌دار باشند → <strong>Next</strong></li>
+                                    <li>✅ مسیر Data را تغییر ندهید → <strong>Next</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>⚠️ مهم! تعیین رمز عبور:</strong></p>
+                                <p>در این مرحله یک <strong>رمز عبور</strong> برای کاربر <code>postgres</code> وارد کنید.</p>
+                                <p style="color:#e74c3c; font-weight:bold;">🔴 این رمز را حتماً یادداشت کنید!</p>
+                                <p>مثلاً: <code>postgres123</code></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <p><strong>پورت پیش‌فرض:</strong></p>
+                                <p>پورت را روی <strong>5432</strong> بگذارید (تغییر ندهید) → <strong>Next</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">6</div>
+                            <div class="step-content">
+                                <p><strong>ادامه نصب:</strong></p>
+                                <p>روی <strong>Next</strong> کلیک کنید تا نصب شروع شود.</p>
+                                <p>صبر کنید تا نصب کامل شود... ⏳</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">7</div>
+                            <div class="step-content">
+                                <p><strong>Stack Builder:</strong></p>
+                                <p>در پایان نصب، پنجره Stack Builder باز می‌شود.</p>
+                                <p style="color:#27ae60; font-weight:bold;">✅ روی Cancel کلیک کنید (نیازی به آن نیست)</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#3498db; margin-top:30px;">👤 بخش دوم: ایجاد کاربر برای Odoo در pgAdmin</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">8</div>
+                            <div class="step-content">
+                                <p><strong>باز کردن pgAdmin:</strong></p>
+                                <p>از منوی Start ویندوز، <strong>pgAdmin 4</strong> را جستجو و باز کنید.</p>
+                                <p>📌 اولین بار که باز می‌کنید، ممکن است کمی طول بکشد.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">9</div>
+                            <div class="step-content">
+                                <p><strong>اتصال به سرور:</strong></p>
+                                <p>در سمت چپ، روی <strong>Servers</strong> کلیک کنید.</p>
+                                <p>سپس روی <strong>PostgreSQL 16</strong> (یا 15) کلیک کنید.</p>
+                                <p>اگر رمز خواست، رمزی که در مرحله 4 وارد کردید را بزنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">10</div>
+                            <div class="step-content">
+                                <p><strong>پیدا کردن Login/Group Roles:</strong></p>
+                                <p>در سمت چپ، زیر PostgreSQL 16، روی علامت <strong>◀</strong> کنار آن کلیک کنید تا باز شود.</p>
+                                <p>گزینه <strong>Login/Group Roles</strong> را پیدا کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">11</div>
+                            <div class="step-content">
+                                <p><strong>ایجاد کاربر جدید:</strong></p>
+                                <p>روی <strong>Login/Group Roles</strong> راست‌کلیک کنید.</p>
+                                <p>از منو، <strong>Create</strong> را انتخاب کنید.</p>
+                                <p>سپس روی <strong>Login/Group Role...</strong> کلیک کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">12</div>
+                            <div class="step-content">
+                                <p><strong>تب General - وارد کردن نام کاربر:</strong></p>
+                                <p>یک پنجره جدید باز می‌شود. در بالای این پنجره چند تب می‌بینید:</p>
+                                <p style="background:#e8f4fd; padding:10px; border-radius:5px; margin:10px 0;">
+                                    General | Definition | Privileges | Membership | Parameters | Security | SQL
+                                </p>
+                                <p>📌 الان باید در تب <strong style="color:#e74c3c;">General</strong> باشید (اولین تب).</p>
+                                <p style="margin-top:15px;">در این تب، یک کادر خالی با عنوان <strong>Name</strong> می‌بینید.</p>
+                                <p>داخل این کادر بنویسید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    odoo
+                                </div>
+                                <p style="color:#27ae60; margin-top:10px;">✅ این نام کاربری است که Odoo با آن به دیتابیس وصل می‌شود.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">13</div>
+                            <div class="step-content">
+                                <p><strong>تب Definition - وارد کردن رمز عبور:</strong></p>
+                                <p>حالا روی تب <strong style="color:#e74c3c;">Definition</strong> کلیک کنید (دومین تب از چپ).</p>
+                                <p style="margin-top:15px;">در این تب، یک کادر با عنوان <strong>Password</strong> می‌بینید.</p>
+                                <p>داخل این کادر بنویسید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    odoo123
+                                </div>
+                                <p style="color:#e74c3c; margin-top:10px;">🔴 <strong>مهم:</strong> این رمز را یادداشت کنید! بعداً در تنظیمات Odoo نیاز دارید.</p>
+                                <p style="background:#fff3cd; padding:10px; border-radius:5px; margin-top:10px;">
+                                    📋 <strong>خلاصه:</strong><br>
+                                    نام کاربر: <code>odoo</code><br>
+                                    رمز عبور: <code>odoo123</code>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">14</div>
+                            <div class="step-content">
+                                <p><strong>تب Privileges - تنظیم دسترسی‌ها:</strong></p>
+                                <p>حالا روی تب <strong style="color:#e74c3c;">Privileges</strong> کلیک کنید (سومین تب).</p>
+                                <p style="margin-top:15px;">در این تب، چندین گزینه می‌بینید که جلوی هر کدام یک لیست کشویی هست.</p>
+                                <p>این دو گزینه را پیدا کنید و روی <strong>Yes</strong> بگذارید:</p>
+                                <ul style="margin-right: 20px; line-height: 3; margin-top:15px;">
+                                    <li>
+                                        <strong>Can login?</strong> 
+                                        <span style="background:#27ae60; color:white; padding:3px 10px; border-radius:3px; margin-right:10px;">Yes</span>
+                                        <br><small style="color:#666;">(یعنی این کاربر می‌تواند وارد دیتابیس شود)</small>
+                                    </li>
+                                    <li>
+                                        <strong>Create databases?</strong> 
+                                        <span style="background:#27ae60; color:white; padding:3px 10px; border-radius:3px; margin-right:10px;">Yes</span>
+                                        <br><small style="color:#666;">(یعنی این کاربر می‌تواند دیتابیس جدید بسازد)</small>
+                                    </li>
+                                </ul>
+                                <p style="color:#888; margin-top:15px;">📌 بقیه گزینه‌ها را تغییر ندهید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">15</div>
+                            <div class="step-content">
+                                <p><strong>ذخیره کاربر:</strong></p>
+                                <p>در پایین پنجره، سمت راست، دکمه <strong style="background:#3498db; color:white; padding:5px 15px; border-radius:3px;">Save</strong> را می‌بینید.</p>
+                                <p>روی آن کلیک کنید.</p>
+                                <p style="color:#27ae60; font-weight:bold; font-size:1.1em; margin-top:15px;">✅ تبریک! کاربر odoo با موفقیت ساخته شد!</p>
+                                <p style="margin-top:10px;">حالا در سمت چپ، زیر Login/Group Roles، باید کاربر <strong>odoo</strong> را ببینید.</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#9b59b6; margin-top:30px;">⚙️ بخش سوم: تنظیم Odoo</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">16</div>
+                            <div class="step-content">
+                                <p><strong>باز کردن فایل تنظیمات Odoo:</strong></p>
+                                <p>کلید <strong>Win + R</strong> را بزنید، سپس این متن را کپی و Paste کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    notepad "C:\Program Files\Odoo 19.0.20251210\server\odoo.conf"
+                                </div>
+                                <p>و Enter بزنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">17</div>
+                            <div class="step-content">
+                                <p><strong>تغییر تنظیمات دیتابیس:</strong></p>
+                                <p>در فایل باز شده، این خطوط را پیدا کنید و تغییر دهید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+db_host = localhost
+db_port = 5432
+db_user = odoo
+db_password = odoo123
+                                </div>
+                                <p style="margin-top:10px;">📌 مطمئن شوید <code>db_user</code> و <code>db_password</code> دقیقاً همان چیزی باشد که در pgAdmin وارد کردید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">18</div>
+                            <div class="step-content">
+                                <p><strong>تنظیم Master Password:</strong></p>
+                                <p>خط <code>admin_passwd</code> را پیدا کنید و به این شکل تغییر دهید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    admin_passwd = admin
+                                </div>
+                                <p>📌 این رمز برای ساخت دیتابیس استفاده می‌شود.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">19</div>
+                            <div class="step-content">
+                                <p><strong>ذخیره فایل:</strong></p>
+                                <p>کلید <strong>Ctrl + S</strong> را بزنید تا فایل ذخیره شود.</p>
+                                <p>سپس Notepad را ببندید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">20</div>
+                            <div class="step-content">
+                                <p><strong>ری‌استارت سرویس Odoo:</strong></p>
+                                <p>کلید <strong>Win + X</strong> را بزنید و <strong>Windows PowerShell (Admin)</strong> یا <strong>Terminal (Admin)</strong> را انتخاب کنید.</p>
+                                <p>این دستور را کپی و Paste کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Restart-Service "odoo-server-19.0"
+                                </div>
+                                <p>و Enter بزنید.</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#27ae60; margin-top:30px;">🎉 بخش چهارم: ورود به Odoo</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">21</div>
+                            <div class="step-content">
+                                <p><strong>باز کردن Odoo:</strong></p>
+                                <p>مرورگر را باز کنید و به این آدرس بروید:</p>
+                                <a href="http://localhost:8069" target="_blank" class="link-btn">🔗 http://localhost:8069</a>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">22</div>
+                            <div class="step-content">
+                                <p><strong>ساخت دیتابیس:</strong></p>
+                                <p>در صفحه باز شده، اطلاعات را پر کنید:</p>
+                                <ul style="margin-right: 20px; line-height: 2.5;">
+                                    <li><strong>Master Password:</strong> <code>admin</code></li>
+                                    <li><strong>Database Name:</strong> یک اسم دلخواه (مثلاً: mycompany)</li>
+                                    <li><strong>Email:</strong> ایمیل شما</li>
+                                    <li><strong>Password:</strong> رمز دلخواه برای ورود به Odoo</li>
+                                    <li><strong>Language:</strong> Persian (Farsi) یا English</li>
+                                    <li><strong>Country:</strong> Iran</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">23</div>
+                            <div class="step-content">
+                                <p><strong>تمام!</strong></p>
+                                <p>روی <strong>Create database</strong> کلیک کنید و صبر کنید...</p>
+                                <p style="color:#27ae60; font-weight:bold; font-size:1.2em;">🎊 تبریک! Odoo آماده استفاده است!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">PostgreSQL</span>
+                        <span class="tag">Connection Refused</span>
+                        <span class="tag">Port 5432</span>
+                        <span class="tag">TCP/IP</span>
+                        <span class="tag">Database</span>
+                        <span class="tag">pgAdmin</span>
+                        <span class="tag">نصب</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 2: Master Password -->
+            <div class="problem-card" data-keywords="master password admin_passwd incorrect wrong invalid authentication failed access denied pbkdf2 sha512 hash encrypted database creation error رمز مستر پسورد دسترسی">
+                <div class="problem-header warning">
+                    <h3>🔑 مشکل Master Password - خطای Access Denied</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        Database creation error: Access Denied
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>📋 توضیح مشکل:</h4>
+                        <p style="background:#fff3cd; padding:15px; border-radius:8px; margin-bottom:20px;">
+                            وقتی Odoo نصب می‌شود، یک Master Password رمزنگاری شده در فایل تنظیمات ذخیره می‌کند که شما نمی‌دانید چیست. 
+                            باید این رمز را به یک رمز ساده تغییر دهید.
+                        </p>
+                        
+                        <h4>✅ راه حل مرحله به مرحله:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>باز کردن فایل تنظیمات:</strong></p>
+                                <p>کلید <strong>Win + R</strong> را بزنید.</p>
+                                <p>این متن را کپی و Paste کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    notepad "C:\Program Files\Odoo 19.0.20251210\server\odoo.conf"
+                                </div>
+                                <p>Enter بزنید تا فایل در Notepad باز شود.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>پیدا کردن خط admin_passwd:</strong></p>
+                                <p>کلید <strong>Ctrl + F</strong> را بزنید و بنویسید: <code>admin_passwd</code></p>
+                                <p>خطی شبیه این می‌بینید:</p>
+                                <div style="background:#fdf2f2; padding:10px; border-radius:5px; direction:ltr; font-family:monospace; margin:10px 0;">
+                                    admin_passwd = $pbkdf2-sha512$600000$xxx...xxx
+                                </div>
+                                <p style="color:#e74c3c;">🔴 این رمز رمزنگاری شده است و قابل استفاده نیست!</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>تغییر به رمز ساده:</strong></p>
+                                <p>کل آن خط را پاک کنید و به جایش بنویسید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    admin_passwd = admin
+                                </div>
+                                <p style="color:#27ae60; margin-top:10px;">✅ حالا Master Password شما می‌شود: <strong>admin</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>ذخیره فایل:</strong></p>
+                                <p>کلید <strong>Ctrl + S</strong> را بزنید.</p>
+                                <p>Notepad را ببندید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <p><strong>ری‌استارت سرویس Odoo:</strong></p>
+                                <p>کلید <strong>Win + X</strong> را بزنید.</p>
+                                <p><strong>Windows PowerShell (Admin)</strong> یا <strong>Terminal (Admin)</strong> را انتخاب کنید.</p>
+                                <p>این دستور را کپی و Paste کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Restart-Service "odoo-server-19.0"
+                                </div>
+                                <p>Enter بزنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">6</div>
+                            <div class="step-content">
+                                <p><strong>تست کنید:</strong></p>
+                                <p>صفحه Odoo را Refresh کنید (F5).</p>
+                                <p>در کادر Master Password بنویسید: <strong>admin</strong></p>
+                                <p style="color:#27ae60; font-weight:bold;">✅ مشکل حل شد!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Master Password</span>
+                        <span class="tag">admin_passwd</span>
+                        <span class="tag">Access Denied</span>
+                        <span class="tag">pbkdf2</span>
+                        <span class="tag">رمزنگاری</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بخش ری‌استارت سرویس -->
+            <div id="restart-service" class="problem-card" data-keywords="restart ریستارت ری استارت service سرویس odoo بعد ویرایش کانفیگ config تغییرات changes apply اعمال فعال powershell cmd terminal دستور">
+                <div class="problem-header danger">
+                    <h3>🔄 ری‌استارت سرویس بعد از ویرایش کانفیگ</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div style="background:#fff3cd; padding:25px; border-radius:15px; border:3px solid #ff9800; margin-bottom:25px;">
+                        <h3 style="color:#e65100; margin-bottom:15px; font-size:1.3em;">⚠️ نکته حیاتی!</h3>
+                        <p style="font-size:1.15em; line-height:2; color:#333;">
+                            <strong>هر بار که فایل <code>odoo.conf</code> را ویرایش می‌کنید، حتماً باید سرویس Odoo را ری‌استارت کنید!</strong><br><br>
+                            در غیر این صورت تغییرات شما اعمال نمی‌شود و همان تنظیمات قبلی استفاده می‌شود.
+                        </p>
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>🚀 روش‌های ری‌استارت سرویس:</h4>
+                        
+                        <h4 style="color:#667eea; margin-top:30px;">✅ روش ۱: PowerShell (توصیه می‌شود)</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>PowerShell را با Admin باز کنید:</strong></p>
+                                <p>کلید <strong>Win + X</strong> بزنید → <strong>Terminal (Admin)</strong> یا <strong>PowerShell (Admin)</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>این دستور را کپی و اجرا کنید:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Restart-Service "odoo-server-19.0"
+                                </div>
+                                <p style="color:#27ae60; margin-top:10px; font-weight:bold;">✅ سرویس در ۲-۳ ثانیه ری‌استارت می‌شود</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#9b59b6; margin-top:40px;">✅ روش ۲: Command Prompt (CMD)</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>CMD را با Admin باز کنید:</strong></p>
+                                <p>در Start Menu بنویسید <code>cmd</code> → راست‌کلیک → <strong>Run as Administrator</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>این دستور را کپی و اجرا کنید:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    net stop "odoo-server-19.0" && net start "odoo-server-19.0"
+                                </div>
+                                <p style="color:#27ae60; margin-top:10px; font-weight:bold;">✅ سرویس متوقف و دوباره راه‌اندازی می‌شود</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#27ae60; margin-top:40px;">✅ روش ۳: دستور سریع (یک خطی)</h4>
+                        <p>اگر می‌خواهید فقط یک دستور کپی کنید و همه کار را انجام دهد:</p>
+                        
+                        <p style="margin-top:20px;"><strong>برای PowerShell:</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                            Restart-Service "odoo-server-19.0"; Write-Host "✓ سرویس ری‌استارت شد!" -ForegroundColor Green
+                        </div>
+                        
+                        <p style="margin-top:20px;"><strong>برای CMD:</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                            net stop "odoo-server-19.0" && net start "odoo-server-19.0" && echo سرویس ری‌استارت شد!
+                        </div>
+                        
+                        <h4 style="margin-top:40px;">🔍 چطور بفهمم سرویس ری‌استارت شد؟</h4>
+                        <p>بعد از اجرای دستور، اگر پیامی شبیه این ببینید، یعنی موفق بوده:</p>
+                        <div style="background:#e8f5e9; padding:15px; border-radius:8px; direction:ltr; font-family:monospace; margin:10px 0; color:#2e7d32;">
+                            ✓ سرویس ری‌استارت شد!
+                        </div>
+                        
+                        <div style="background:#ffebee; padding:20px; border-radius:10px; margin-top:25px; border-right:5px solid #f44336;">
+                            <h4 style="color:#c62828; margin-bottom:10px;">❌ اگر خطا داد:</h4>
+                            <ul style="margin-right:20px; line-height:2.5;">
+                                <li><strong>"Access Denied"</strong> → Terminal یا CMD را با <strong>Run as Administrator</strong> باز کنید</li>
+                                <li><strong>"Service not found"</strong> → نام سرویس اشتباه است. مطمئن شوید <code>odoo-server-19.0</code> نوشته‌اید</li>
+                                <li><strong>"Cannot stop service"</strong> → سرویس در حال اجراست، چند ثانیه صبر کنید و دوباره امتحان کنید</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="background:#f3e5f5; padding:20px; border-radius:10px; margin-top:25px; border-right:5px solid #9c27b0;">
+                            <h4 style="color:#6a1b9a; margin-bottom:10px;">💡 کی باید ری‌استارت کنم؟</h4>
+                            <p style="line-height:2;">
+                                ✅ بعد از تغییر <code>admin_passwd</code><br>
+                                ✅ بعد از تغییر <code>db_user</code> یا <code>db_password</code><br>
+                                ✅ بعد از تغییر <code>db_host</code> یا <code>db_port</code><br>
+                                ✅ بعد از هر تغییری در فایل <code>odoo.conf</code>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">ری‌استارت</span>
+                        <span class="tag">restart</span>
+                        <span class="tag">service</span>
+                        <span class="tag">PowerShell</span>
+                        <span class="tag">CMD</span>
+                        <span class="tag">ویرایش کانفیگ</span>
+                        <span class="tag">اعمال تغییرات</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 2.5: بعد از رفرش دوباره Access Denied -->
+            <div id="restart-after-refresh" class="problem-card" data-keywords="refresh reload بعد رفرش دوباره باز again access denied admin_passwd hash هش password رمز مستر پسورد تکرار مجدد بار دیگر">
+                <div class="problem-header danger">
+                    <h3>⚠️ بعد از رفرش، دوباره خطای Access Denied</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        Database creation error: Access Denied
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>📋 چرا این اتفاق می‌افتد؟</h4>
+                        <div style="background:#fff3cd; padding:20px; border-radius:10px; margin-bottom:25px; border-right:5px solid #ff9800;">
+                            <p style="font-size:1.1em; line-height:2; color:#333;">
+                                🔄 <strong>Odoo یک مشکل عجیب دارد:</strong><br><br>
+                                هر بار که سرویس Odoo ریستارت می‌شود، خودکار <code>admin_passwd</code> را به فرمت هش تبدیل می‌کند!<br><br>
+                                یعنی شما <code>admin_passwd = admin</code> می‌نویسید، ولی Odoo آن را به این تبدیل می‌کند:<br>
+                                <code style="background:#fdf2f2; padding:5px; display:inline-block; margin-top:10px;">admin_passwd = $pbkdf2-sha512$600000$xxx...</code>
+                            </p>
+                        </div>
+                        
+                        <h4 style="color:#e74c3c;">🚀 راه حل فوری (فقط ۱۰ ثانیه!):</h4>
+                        
+                        <div style="background:#e8f5e9; padding:25px; border-radius:15px; border:3px solid #4caf50; margin:20px 0;">
+                            <h3 style="color:#2e7d32; margin-bottom:15px;">✅ راه حل ساده:</h3>
+                            <p style="font-size:1.1em; line-height:2; color:#1b5e20; margin-bottom:20px;">
+                                <strong>هر وقت خطای Access Denied گرفتید، فقط سرویس را یک بار ریستارت کنید!</strong>
+                            </p>
+                            
+                            <div class="step">
+                                <div class="step-number" style="background:#4caf50;">1</div>
+                                <div class="step-content">
+                                    <p><strong>PowerShell یا Terminal را با Admin باز کنید:</strong></p>
+                                    <p>کلید <strong>Win + X</strong> بزنید → <strong>Terminal (Admin)</strong> یا <strong>PowerShell (Admin)</strong></p>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number" style="background:#4caf50;">2</div>
+                                <div class="step-content">
+                                    <p><strong>این دستور را اجرا کنید:</strong></p>
+                                    <div class="code-block">
+                                        <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                        Restart-Service "odoo-server-19.0"
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="step">
+                                <div class="step-number" style="background:#4caf50;">3</div>
+                                <div class="step-content">
+                                    <p><strong>فقط همین!</strong></p>
+                                    <p style="color:#2e7d32; font-weight:bold;">✅ مرورگر را رفرش کنید و Master Password <code>admin</code> را بزنید</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>🤔 چرا این کار جواب می‌دهد؟</h4>
+                        <p style="background:#e3f2fd; padding:15px; border-radius:8px; line-height:2;">
+                            وقتی شما دستی <code>admin_passwd = admin</code> می‌نویسید و سرویس را ریستارت می‌کنید، 
+                            Odoo آن را می‌خواند و قبل از هش کردن، یک بار با همان مقدار ساده کار می‌کند. 
+                            بعد آن را هش می‌کند ولی خودش می‌داند که معادل <code>admin</code> است.
+                        </p>
+                        
+                        <div style="background:#ffebee; padding:20px; border-radius:10px; margin-top:20px; border-right:5px solid #f44336;">
+                            <h4 style="color:#c62828; margin-bottom:10px;">❌ کار اشتباه:</h4>
+                            <p style="line-height:2;">
+                                <strong>نیازی نیست</strong> هر بار فایل <code>odoo.conf</code> را باز کنید و دوباره <code>admin_passwd = admin</code> بنویسید!<br>
+                                فقط یک بار ریستارت کنید و همین!
+                            </p>
+                        </div>
+                        
+                        <div style="background:#f3e5f5; padding:20px; border-radius:10px; margin-top:20px; border-right:5px solid #9c27b0;">
+                            <h4 style="color:#6a1b9a; margin-bottom:10px;">💡 نکته برای آینده:</h4>
+                            <p style="line-height:2;">
+                                اگر Odoo خاموش بود و دوباره روشن کردید، همین مشکل پیش می‌آید.<br>
+                                هر بار فقط یک بار <code>Restart-Service "odoo-server-19.0"</code> بزنید و حل می‌شود.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">رفرش</span>
+                        <span class="tag">دوباره خطا</span>
+                        <span class="tag">Access Denied</span>
+                        <span class="tag">هش شدن</span>
+                        <span class="tag">admin</span>
+                        <span class="tag">restart</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 3.1: خطای رمز کاربر postgres -->
+            <div class="problem-card" data-keywords="password authentication failed for user postgres fatal connection server port 5432 pgadmin cannot connect to server رمز پستگرس postgres password reset ریست رمز alter user newpassword فراموشی رمز نصب postgresql">
+                <div class="problem-header danger">
+                    <h3>🔑 خطای رمز کاربر postgres در pgAdmin</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        connection failed: :1), port 5432 failed: FATAL: password authentication failed for user "postgres"
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>📋 توضیح مشکل:</h4>
+                        <p style="background:#fff3cd; padding:20px; border-radius:10px; margin-bottom:20px; line-height:2;">
+                            <strong>کاربر postgres</strong> یعنی کاربر اصلی و ادمین PostgreSQL که <strong>شما خودتان موقع نصب PostgreSQL</strong> رمز آن را تعیین کرده‌اید.<br><br>
+                            
+                            ⚠️ <strong>این رمز کجا بوده؟</strong><br>
+                            وقتی PostgreSQL را نصب می‌کردید، در یکی از مراحل از شما رمز برای کاربر <code>postgres</code> خواسته بود. همان رمز را باید در pgAdmin وارد کنید.<br><br>
+                            
+                            🔴 <strong>اگر رمز را یادتان نیست:</strong> نگران نباشید! می‌توانید با دستور زیر رمز جدید بسازید.
+                        </p>
+                        
+                        <h4 style="color:#e74c3c;">🚀 راه حل: ریست کردن رمز postgres</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>باز کردن PowerShell به عنوان Administrator:</strong></p>
+                                <p>کلید <strong>Win + X</strong> را بزنید و <strong>Terminal (Admin)</strong> یا <strong>Windows PowerShell (Admin)</strong> را انتخاب کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>اجرای دستور ریست رمز:</strong></p>
+                                <p>این دستور را کپی کنید و در PowerShell Paste کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+cd "C:\Program Files\PostgreSQL\16\bin"; $env:PGPASSWORD=""; .\psql.exe -U postgres -c "ALTER USER postgres WITH PASSWORD 'newpassword123';"
+                                </div>
+                                <p style="margin-top:10px;">بعد از اجرا، رمز فعلی را بزنید (اگر یادتان نیست، Enter بزنید و ادامه دهید).</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>رمز جدید شما:</strong></p>
+                                <div style="background:#27ae60; color:white; padding:20px; border-radius:10px; text-align:center; font-size:1.3em; font-weight:bold; margin:15px 0;">
+                                    newpassword123
+                                </div>
+                                <p>این رمز را در pgAdmin وارد کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>اگر دستور بالا کار نکرد (نسخه‌های دیگر PostgreSQL):</strong></p>
+                                <p>اگر PostgreSQL در مسیر دیگری نصب شده، این دستورات را امتحان کنید:</p>
+                                
+                                <p style="margin-top:15px;"><strong>PostgreSQL 15:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+cd "C:\Program Files\PostgreSQL\15\bin"; .\psql.exe -U postgres -c "ALTER USER postgres WITH PASSWORD 'newpassword123';"
+                                </div>
+                                
+                                <p style="margin-top:15px;"><strong>PostgreSQL 14:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+cd "C:\Program Files\PostgreSQL\14\bin"; .\psql.exe -U postgres -c "ALTER USER postgres WITH PASSWORD 'newpassword123';"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <p><strong>برگشت به pgAdmin:</strong></p>
+                                <p>حالا در pgAdmin، رمز جدید <code>newpassword123</code> را وارد کنید و روی <strong>OK</strong> کلیک کنید.</p>
+                                <p style="color:#27ae60; font-weight:bold; font-size:1.1em;">✅ مشکل حل شد!</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="color:#3498db; margin-top:30px;">💡 رمزهای رایجی که معمولاً مردم استفاده می‌کنند:</h4>
+                        <p>قبل از ریست، این رمزها را امتحان کنید (شاید یادتان بیاید):</p>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                            <span style="background:#e8f4fd; padding:10px 20px; border-radius:8px; font-family:monospace;">postgres</span>
+                            <span style="background:#e8f4fd; padding:10px 20px; border-radius:8px; font-family:monospace;">admin</span>
+                            <span style="background:#e8f4fd; padding:10px 20px; border-radius:8px; font-family:monospace;">123456</span>
+                            <span style="background:#e8f4fd; padding:10px 20px; border-radius:8px; font-family:monospace;">root</span>
+                            <span style="background:#e8f4fd; padding:10px 20px; border-radius:8px; font-family:monospace;">password</span>
+                        </div>
+                        
+                        <div style="background:#fdf2f2; border:2px solid #e74c3c; border-radius:10px; padding:20px; margin-top:25px;">
+                            <h4 style="color:#c0392b; margin-bottom:10px;">⚠️ نکته مهم:</h4>
+                            <p style="line-height:1.8;">
+                                <strong>کاربر postgres</strong> فقط برای مدیریت PostgreSQL و pgAdmin استفاده می‌شود.<br>
+                                <strong>برای Odoo</strong> باید کاربر دیگری (مثل <code>odoo</code> یا <code>openpg</code>) بسازید که در فایل <code>odoo.conf</code> تنظیم می‌کنید.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">postgres</span>
+                        <span class="tag">password authentication failed</span>
+                        <span class="tag">pgAdmin</span>
+                        <span class="tag">ریست رمز</span>
+                        <span class="tag">ALTER USER</span>
+                        <span class="tag">PostgreSQL</span>
+                        <span class="tag">فراموشی رمز</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 3: خطای احراز هویت PostgreSQL -->
+            <div class="problem-card" data-keywords="password authentication failed for user odoo openpg postgres fatal connection server port 5432 failed رمز کاربر دیتابیس authentication role is not permitted to log in login permission database creation error localhost ::1 can login privileges دسترسی ورود pgadmin">
+                <div class="problem-header">
+                    <h3>🔐 خطای رمز یا دسترسی کاربر PostgreSQL</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        Database creation error: connection to server at "localhost" (::1), port 5432 failed: FATAL: password authentication failed for user "odoo"
+                    </div>
+                    <div class="error-box">
+                        Database creation error: connection to server at "localhost" (::1), port 5432 failed: FATAL: password authentication failed for user "openpg"
+                    </div>
+                    <div class="error-box">
+                        Database creation error: connection to server at "localhost" (::1), port 5432 failed: FATAL: role "openpg" is not permitted to log in
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>📋 توضیح مشکل:</h4>
+                        <p style="background:#fff3cd; padding:15px; border-radius:8px; margin-bottom:20px;">
+                            این خطاها یعنی کاربری که Odoo می‌خواهد با آن به دیتابیس وصل شود:<br><br>
+                            ❌ <strong>password authentication failed:</strong> رمز کاربر اشتباه است یا کاربر اصلا وجود ندارد<br>
+                            ❌ <strong>role is not permitted to log in:</strong> کاربر وجود دارد ولی دسترسی ورود (Can login) ندارد<br><br>
+                            📌 <strong>نسخه عمومی:</strong> کاربر <code>odoo</code> با رمز <code>odoo123</code><br>
+                            📌 <strong>نسخه سازمانی:</strong> کاربر <code>openpg</code> با رمز <code>openpgpwd</code>
+                        </p>
+                        
+                        <div style="background:#e8f5e9; border:3px solid #27ae60; border-radius:10px; padding:20px; margin-bottom:25px;">
+                            <h4 style="color:#27ae60; margin-bottom:15px;">⚡ راه حل فوری با یک دستور (توصیه می‌شود!):</h4>
+                            <p style="line-height:2; margin-bottom:15px;">
+                                <strong>به جای pgAdmin</strong>، می‌توانید با یک دستور ساده، کاربر را بسازید و همه چیز حل شود!
+                            </p>
+                            
+                            <div style="background:white; padding:15px; border-radius:8px; margin:15px 0;">
+                                <p style="font-weight:bold; margin-bottom:10px;">🔹 برای نسخه عمومی (Community):</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+$env:PGPASSWORD="رمز_postgres_خودتون"; cd "C:\Program Files\PostgreSQL\16\bin"; .\psql.exe -U postgres -c "DROP USER IF EXISTS odoo; CREATE USER odoo WITH PASSWORD 'odoo123' CREATEDB LOGIN;"
+                                </div>
+                                <p style="color:#888; font-size:0.9em; margin-top:8px;">⚠️ جای <code>رمز_postgres_خودتون</code> رمزی که در pgAdmin دارید را بزنید (مثلا <code>newpassword123</code>)</p>
+                            </div>
+                            
+                            <div style="background:white; padding:15px; border-radius:8px; margin:15px 0;">
+                                <p style="font-weight:bold; margin-bottom:10px;">🔹 برای نسخه سازمانی (Enterprise) - برای خطای openpg:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+$env:PGPASSWORD="رمز_postgres_خودتون"; cd "C:\Program Files\PostgreSQL\16\bin"; .\psql.exe -U postgres -c "DROP USER IF EXISTS openpg; CREATE USER openpg WITH PASSWORD 'openpgpwd' CREATEDB LOGIN;"
+                                </div>
+                                <p style="color:#888; font-size:0.9em; margin-top:8px;">⚠️ جای <code>رمز_postgres_خودتون</code> رمزی که در pgAdmin دارید را بزنید (مثلا <code>newpassword123</code>)</p>
+                            </div>
+                            
+                            <p style="color:#27ae60; font-weight:bold; margin-top:15px;">✅ بعد از اجرا، سرویس Odoo را ری‌استارت کنید:</p>
+                            <div class="code-block">
+                                <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+Restart-Service "odoo-server-19.0"
+                            </div>
+                            
+                            <p style="background:#fff3cd; padding:10px; border-radius:5px; margin-top:15px; font-size:0.95em;">
+                                💡 <strong>نکته:</strong> اگر این دستورات کار کرد، دیگر نیازی به مراحل پایین نیست! مستقیم برید به <a href="http://localhost:8069" target="_blank" style="color:#667eea; font-weight:bold;">http://localhost:8069</a>
+                            </p>
+                        </div>
+                        
+                        <h4 style="color:#3498db;">📱 یا روش گرافیکی با pgAdmin (اگر دستور بالا کار نکرد):</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>اول ببینید Odoo چه کاربری می‌خواهد:</strong></p>
+                                <p>در متن خطا نگاه کنید، نام کاربر نوشته شده:</p>
+                                <ul style="margin-right:20px; line-height:2.5; margin-top:10px;">
+                                    <li>اگر <code>user "odoo"</code> یا <code>role "odoo"</code> نوشته → کاربر <strong>odoo</strong> بسازید یا ویرایش کنید</li>
+                                    <li>اگر <code>user "openpg"</code> یا <code>role "openpg"</code> نوشته → کاربر <strong>openpg</strong> بسازید یا ویرایش کنید</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>pgAdmin را باز کنید:</strong></p>
+                                <p>در Start Menu بنویسید <code>pgAdmin</code> و آن را باز کنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>به سرور وصل شوید:</strong></p>
+                                <p>در سمت چپ روی <strong>Servers</strong> → <strong>PostgreSQL 16</strong> کلیک کنید.</p>
+                                <p>اگر رمز خواست، رمزی که موقع نصب PostgreSQL دادید را بزنید.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>کاربر جدید بسازید:</strong></p>
+                                <p>روی <strong>Login/Group Roles</strong> راست‌کلیک → <strong>Create</strong> → <strong>Login/Group Role</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <p><strong>برای نسخه عمومی (Community):</strong></p>
+                                <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+                                    <tr style="background:#667eea; color:white;">
+                                        <th style="padding:10px;">تب</th>
+                                        <th style="padding:10px;">فیلد</th>
+                                        <th style="padding:10px;">مقدار</th>
+                                    </tr>
+                                    <tr style="background:#f8f9fa;">
+                                        <td style="padding:10px; border:1px solid #ddd;">General</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Name</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><code>odoo</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:10px; border:1px solid #ddd;">Definition</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Password</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><code>odoo123</code></td>
+                                    </tr>
+                                    <tr style="background:#f8f9fa;">
+                                        <td style="padding:10px; border:1px solid #ddd;">Privileges</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Can login?</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><strong>Yes</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:10px; border:1px solid #ddd;">Privileges</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Create databases?</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><strong>Yes</strong></td>
+                                    </tr>
+                                </table>
+                                
+                                <p style="margin-top:20px;"><strong>برای نسخه سازمانی (Enterprise):</strong></p>
+                                <table style="width:100%; border-collapse:collapse; margin:10px 0;">
+                                    <tr style="background:#9b59b6; color:white;">
+                                        <th style="padding:10px;">تب</th>
+                                        <th style="padding:10px;">فیلد</th>
+                                        <th style="padding:10px;">مقدار</th>
+                                    </tr>
+                                    <tr style="background:#f8f9fa;">
+                                        <td style="padding:10px; border:1px solid #ddd;">General</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Name</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><code>openpg</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:10px; border:1px solid #ddd;">Definition</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Password</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><code>openpgpwd</code></td>
+                                    </tr>
+                                    <tr style="background:#f8f9fa;">
+                                        <td style="padding:10px; border:1px solid #ddd;">Privileges</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Can login?</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><strong>Yes</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:10px; border:1px solid #ddd;">Privileges</td>
+                                        <td style="padding:10px; border:1px solid #ddd;">Create databases?</td>
+                                        <td style="padding:10px; border:1px solid #ddd;"><strong>Yes</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">6</div>
+                            <div class="step-content">
+                                <p><strong>Save کنید و سرویس را ری‌استارت کنید:</strong></p>
+                                <p>بعد از Save، PowerShell (Admin) را باز کنید و این دستور را اجرا کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+Restart-Service "odoo-server-19.0"
+                                </div>
+                                <p style="margin-top:10px;">بعد صفحه Odoo را <strong>Refresh</strong> کنید.</p>
+                                <p style="color:#27ae60; font-weight:bold; font-size:1.1em;">✅ مشکل حل شد!</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background:#fdf2f2; border:3px solid #e74c3c; border-radius:10px; padding:20px; margin-top:25px;">
+                            <h4 style="color:#c0392b; margin-bottom:15px;">⚠️ نکات مهم برای کاربر openpg:</h4>
+                            <ul style="margin-right:20px; line-height:2.5;">
+                                <li>کاربر <code>openpg</code> مخصوص نسخه سازمانی (Enterprise) Odoo است</li>
+                                <li>رمز پیش‌فرض <code>openpgpwd</code> است که در فایل <code>odoo.conf</code> نوشته شده</li>
+                                <li>اگر این کاربر وجود نداشته باشد، Odoo نمی‌تواند به دیتابیس وصل شود</li>
+                                <li><strong>حتما بعد از ساخت کاربر، سرویس Odoo را ری‌استارت کنید!</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <h4 style="color:#3498db; margin-top:30px;">💻 روش جایگزین با دستور CMD (برای حرفه‌ای‌ها):</h4>
+                        <p>اگر رمز postgres را می‌دانید، می‌توانید با این دستور کاربر بسازید:</p>
+                        
+                        <p style="margin-top:15px;"><strong>برای نسخه عمومی:</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                            "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -c "CREATE USER odoo WITH PASSWORD 'odoo123' CREATEDB LOGIN;"
+                        </div>
+                        
+                        <p style="margin-top:15px;"><strong>برای نسخه سازمانی:</strong></p>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                            "C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres -c "CREATE USER openpg WITH PASSWORD 'openpgpwd' CREATEDB LOGIN;"
+                        </div>
+                        <p style="color:#888; margin-top:10px;">📌 بعد از اجرا، رمز postgres را وارد کنید.</p>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">password authentication failed</span>
+                        <span class="tag">user odoo</span>
+                        <span class="tag">PostgreSQL</span>
+                        <span class="tag">db_password</span>
+                        <span class="tag">FATAL</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 4: Master Password تولید شده خودکار -->
+            <div class="problem-card" data-keywords="warning database manager not protected generated master password d2nu secure it رمز تولید شده خودکار امنیت">
+                <div class="problem-header info">
+                    <h3>⚠️ هشدار Master Password تولید شده خودکار</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box" style="background:#fff3cd; border-color:#f39c12; color:#856404;">
+                        Warning, your Odoo database manager is not protected. To secure it, we have generated the following master password for it: d2nu-fca5-yvjb
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>📋 توضیح:</h4>
+                        <p style="background:#e8f4fd; padding:15px; border-radius:8px; margin-bottom:20px;">
+                            این یک هشدار است، نه خطا! Odoo می‌گوید که یک Master Password جدید برای شما تولید کرده است.
+                            می‌توانید از همان رمز تولید شده استفاده کنید، یا آن را تغییر دهید.
+                        </p>
+                        
+                        <h4>✅ گزینه ۱: استفاده از رمز تولید شده</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p>رمزی که در پیام زرد نمایش داده شده را کپی کنید (مثلاً: <code>d2nu-fca5-yvjb</code>)</p>
+                                <p>آن را در کادر Master Password وارد کنید.</p>
+                                <p style="color:#e74c3c;">🔴 این رمز را یادداشت کنید!</p>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top:20px;">✅ گزینه ۲: تنظیم رمز دلخواه (توصیه می‌شود)</h4>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p>فایل تنظیمات را باز کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    notepad "C:\Program Files\Odoo 19.0.20251210\server\odoo.conf"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p>خط <code>admin_passwd</code> را به این تغییر دهید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    admin_passwd = admin
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>Ctrl + S</strong> برای ذخیره.</p>
+                                <p>سپس سرویس را ری‌استارت کنید:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Restart-Service "odoo-server-19.0"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <p>صفحه را Refresh کنید و از رمز <strong>admin</strong> استفاده کنید.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Warning</span>
+                        <span class="tag">generated password</span>
+                        <span class="tag">not protected</span>
+                        <span class="tag">database manager</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 5: پورت اشغال -->
+            <div class="problem-card" data-keywords="port 8069 already in use address already in use bind error oserror socket">
+                <div class="problem-header warning">
+                    <h3>🚫 پورت 8069 اشغال است</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        OSError: [Errno 10048] Address already in use / Port 8069 is already in use
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>✅ راه حل:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>پیدا کردن برنامه‌ای که پورت را اشغال کرده:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    netstat -ano | findstr :8069
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>بستن برنامه با PID:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    taskkill /PID شماره_PID /F
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>یا تغییر پورت Odoo:</strong></p>
+                                <p>در فایل odoo.conf:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    http_port = 8070
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Port 8069</span>
+                        <span class="tag">Address in use</span>
+                        <span class="tag">Socket</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 4: PostgreSQL Authentication -->
+            <div class="problem-card" data-keywords="authentication failed password peer ident md5 pg_hba.conf role does not exist fatal password authentication">
+                <div class="problem-header">
+                    <h3>🔐 خطای احراز هویت PostgreSQL</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        FATAL: password authentication failed for user "odoo" / role "odoo" does not exist
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>✅ راه حل:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>pgAdmin را باز کنید</strong> (از Start Menu)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>ایجاد کاربر جدید:</strong></p>
+                                <p>روی Login/Group Roles راست‌کلیک → Create → Login/Group Role</p>
+                                <ul style="margin-right: 20px; line-height: 2;">
+                                    <li>Name: <code>odoo</code></li>
+                                    <li>Password: رمز دلخواه</li>
+                                    <li>Can login: ✅</li>
+                                    <li>Create databases: ✅</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>یا با SQL:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+CREATE USER odoo WITH PASSWORD 'odoo123' CREATEDB LOGIN;
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>به‌روزرسانی odoo.conf:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+db_user = odoo
+db_password = odoo123
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Authentication</span>
+                        <span class="tag">PostgreSQL User</span>
+                        <span class="tag">Role</span>
+                        <span class="tag">pg_hba.conf</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 5: سرویس شروع نمی‌شود -->
+            <div class="problem-card" data-keywords="service failed to start error 1067 process terminated unexpectedly windows service odoo-server">
+                <div class="problem-header">
+                    <h3>⚠️ سرویس Odoo شروع نمی‌شود</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        Error 1067: The process terminated unexpectedly / Windows could not start the odoo-server-19.0 service
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>✅ راه حل:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>بررسی فایل لاگ:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    notepad "C:\Program Files\Odoo 19.0.20251210\server\odoo.log"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>اجرای دستی برای دیدن خطا:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+cd "C:\Program Files\Odoo 19.0.20251210\server"
+python odoo-bin -c odoo.conf
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>بررسی صحت فایل کانفیگ:</strong></p>
+                                <p>مطمئن شوید هیچ خطای تایپی در odoo.conf نیست</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Service</span>
+                        <span class="tag">Error 1067</span>
+                        <span class="tag">Start Failed</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 6: دسترسی به صفحه -->
+            <div class="problem-card" data-keywords="localhost 8069 not working page not loading connection timeout refused site can't be reached err_connection">
+                <div class="problem-header info">
+                    <h3>🌐 صفحه Odoo باز نمی‌شود</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        This site can't be reached / ERR_CONNECTION_REFUSED / localhost:8069 not loading
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>✅ راه حل:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>بررسی سرویس:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Get-Service "odoo-server-19.0"
+                                </div>
+                                <p>اگر Stopped بود:</p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Start-Service "odoo-server-19.0"
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>بررسی فایروال:</strong></p>
+                                <p>پورت 8069 را در Windows Firewall باز کنید</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>آدرس صحیح:</strong></p>
+                                <a href="http://localhost:8069" target="_blank" class="link-btn">🔗 http://localhost:8069</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Localhost</span>
+                        <span class="tag">8069</span>
+                        <span class="tag">Connection</span>
+                        <span class="tag">Firewall</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- مشکل 7: ماژول یافت نشد -->
+            <div class="problem-card" data-keywords="module not found no module named import error modulenotfounderror python package missing">
+                <div class="problem-header warning">
+                    <h3>📦 ماژول پایتون یافت نشد</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">
+                        ModuleNotFoundError: No module named 'xxx' / ImportError
+                    </div>
+                    
+                    <div class="solution-section">
+                        <h4>✅ راه حل:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>نصب ماژول از requirements:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+cd "C:\Program Files\Odoo 19.0.20251210\server"
+pip install -r requirements.txt
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>یا نصب ماژول خاص:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    pip install نام_ماژول
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Module</span>
+                        <span class="tag">Python</span>
+                        <span class="tag">pip</span>
+                        <span class="tag">Import</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- راهنمای ساخت دیتابیس -->
+            <div class="problem-card" data-keywords="create database how to new database manager setup first run">
+                <div class="problem-header success">
+                    <h3>✨ راهنمای ساخت دیتابیس جدید</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="solution-section">
+                        <h4>📋 مراحل ساخت دیتابیس:</h4>
+                        
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p>مرورگر را باز کنید:</p>
+                                <a href="http://localhost:8069" target="_blank" class="link-btn">🔗 http://localhost:8069</a>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p>روی <strong>Create Database</strong> کلیک کنید</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>اطلاعات را پر کنید:</strong></p>
+                                <ul style="margin-right: 20px; line-height: 2.5;">
+                                    <li><strong>Master Password:</strong> <code>admin</code> (یا رمزی که تنظیم کردید)</li>
+                                    <li><strong>Database Name:</strong> اسم دلخواه (مثلاً: mycompany)</li>
+                                    <li><strong>Email:</strong> ایمیل ادمین</li>
+                                    <li><strong>Password:</strong> رمز ادمین دیتابیس</li>
+                                    <li><strong>Language:</strong> فارسی یا English</li>
+                                    <li><strong>Country:</strong> Iran</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p>روی <strong>Create database</strong> کلیک کنید و صبر کنید</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="keywords">
+                        <span class="tag">Create Database</span>
+                        <span class="tag">Setup</span>
+                        <span class="tag">First Run</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            <div class="no-results-icon">🔍</div>
+            <p>نتیجه‌ای یافت نشد</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">سعی کنید کلمات کلیدی دیگری جستجو کنید</p>
+        </div>
+
+        <footer>
+            <p>ساخته شده با ❤️ برای کاربران Odoo</p>
+            <p style="margin-top: 10px;">نسخه 1.0 - بهمن ۱۴۰۴</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle card open/close
+        document.querySelectorAll('.problem-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const card = header.parentElement;
+                card.classList.toggle('open');
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const problemCards = document.querySelectorAll('.problem-card');
+        const resultsInfo = document.getElementById('resultsInfo');
+        const noResults = document.getElementById('noResults');
+
+        searchInput.addEventListener('input', performSearch);
+
+        function performSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+            
+            if (query.length === 0) {
+                clearBtn.style.display = 'none';
+                problemCards.forEach(card => {
+                    card.classList.remove('hidden');
+                    card.classList.remove('open');
+                });
+                resultsInfo.textContent = '';
+                noResults.style.display = 'none';
+                return;
+            }
+
+            clearBtn.style.display = 'block';
+            
+            let visibleCount = 0;
+            const queryWords = query.split(/\s+/);
+
+            problemCards.forEach(card => {
+                const keywords = card.dataset.keywords.toLowerCase();
+                const content = card.textContent.toLowerCase();
+                const combined = keywords + ' ' + content;
+                
+                // Check if any word from query matches
+                const matches = queryWords.some(word => 
+                    word.length > 2 && combined.includes(word)
+                ) || combined.includes(query);
+
+                if (matches) {
+                    card.classList.remove('hidden');
+                    card.classList.add('open');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                    card.classList.remove('open');
+                }
+            });
+
+            if (visibleCount > 0) {
+                resultsInfo.textContent = `${visibleCount} نتیجه یافت شد`;
+                noResults.style.display = 'none';
+            } else {
+                resultsInfo.textContent = '';
+                noResults.style.display = 'block';
+            }
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            problemCards.forEach(card => {
+                card.classList.remove('hidden');
+                card.classList.remove('open');
+            });
+            resultsInfo.textContent = '';
+            noResults.style.display = 'none';
+        }
+
+        function filterByTag(tag) {
+            searchInput.value = tag;
+            performSearch();
+        }
+
+        function copyCode(btn) {
+            const codeBlock = btn.parentElement;
+            const code = codeBlock.textContent.replace('کپی', '').trim();
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = 'کپی شد ✓';
+                setTimeout(() => {
+                    btn.textContent = 'کپی';
+                }, 2000);
+            });
+        }
+
+        // Exact search - finds best matching card and opens it
+        function exactSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+            if (query.length === 0) {
+                alert('لطفاً متن خطا را در کادر جستجو وارد کنید');
+                return;
+            }
+
+            clearBtn.style.display = 'block';
+            
+            // Score each card based on how many query words it contains
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            // Define error patterns and their matching keywords
+            const errorPatterns = [
+                { pattern: /connection refused.*10061|0x0000274D/i, keyword: 'connection refused' },
+                { pattern: /password authentication failed/i, keyword: 'password authentication failed' },
+                { pattern: /role.*is not permitted to log in|not permitted to log in/i, keyword: 'not permitted to log in' },
+                { pattern: /access denied/i, keyword: 'access denied' },
+                { pattern: /role.*does not exist/i, keyword: 'role does not exist' },
+                { pattern: /master password/i, keyword: 'master password' },
+                { pattern: /port 5432 failed/i, keyword: 'port 5432' },
+                { pattern: /openpg/i, keyword: 'openpg' },
+                { pattern: /user.*odoo/i, keyword: 'user odoo' }
+            ];
+            
+            // Find matching pattern
+            let matchedKeyword = null;
+            for (const ep of errorPatterns) {
+                if (ep.pattern.test(query)) {
+                    matchedKeyword = ep.keyword;
+                    break;
+                }
+            }
+
+            problemCards.forEach(card => {
+                const keywords = card.dataset.keywords.toLowerCase();
+                const content = card.textContent.toLowerCase();
+                const errorBoxes = card.querySelectorAll('.error-box');
+                let errorTexts = '';
+                errorBoxes.forEach(box => errorTexts += box.textContent.toLowerCase() + ' ');
+                
+                const combined = keywords + ' ' + content + ' ' + errorTexts;
+                
+                let score = 0;
+                
+                // If matched a known pattern, prioritize cards with that keyword
+                if (matchedKeyword && combined.includes(matchedKeyword)) {
+                    score += 100;
+                }
+                
+                // Count matching words
+                const queryWords = query.split(/\s+/);
+                queryWords.forEach(word => {
+                    if (word.length > 2 && combined.includes(word)) {
+                        score += 1;
+                    }
+                });
+                
+                // Bonus for exact phrase match
+                if (combined.includes(query)) {
+                    score += 50;
+                }
+                
+                // Bonus for error box match
+                if (errorTexts.includes(query.substring(0, 50))) {
+                    score += 30;
+                }
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMatch = card;
+                }
+            });
+
+            // Hide all cards and show only best match
+            problemCards.forEach(card => {
+                card.classList.add('hidden');
+                card.classList.remove('open');
+            });
+
+            if (bestMatch && bestScore > 0) {
+                bestMatch.classList.remove('hidden');
+                bestMatch.classList.add('open');
+                
+                // Open the card content
+                const content = bestMatch.querySelector('.problem-content');
+                const icon = bestMatch.querySelector('.toggle-icon');
+                if (content && icon) {
+                    content.style.display = 'block';
+                    icon.textContent = '▲';
+                }
+                
+                resultsInfo.innerHTML = '<span style="color:#27ae60;">✅ بهترین نتیجه یافت شد - راه حل باز شد</span>';
+                noResults.style.display = 'none';
+                
+                // Scroll to the card
+                setTimeout(() => {
+                    bestMatch.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            } else {
+                resultsInfo.textContent = '';
+                noResults.style.display = 'block';
+            }
+        }
+
+        // Also trigger exact search on Enter key
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                exactSearch();
+            }
+        });
+
+        // Open card automatically if URL has hash
+        window.addEventListener('load', function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const targetElement = document.querySelector(hash);
+                if (targetElement && targetElement.classList.contains('problem-card')) {
+                    // Open the card
+                    const content = targetElement.querySelector('.problem-content');
+                    const icon = targetElement.querySelector('.toggle-icon');
+                    if (content && icon) {
+                        content.style.display = 'block';
+                        icon.textContent = '▲';
+                        targetElement.classList.add('active');
+                    }
+                    // Scroll to it after a short delay
+                    setTimeout(() => {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
