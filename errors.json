@@ -165,5 +165,595 @@
       "Barcode"
     ],
     "dateAdded": "2026-02-07T12:10:00"
+  },
+  {
+    "id": "ai-module-pgvector-install-260207",
+    "title": "🤖 خطای نصب ماژول AI - vector.control: No such file",
+    "type": "error",
+    "errorText": "psycopg2.errors.UndefinedFile: could not open extension control file \"/usr/share/postgresql/14/extension/vector.control\": No such file or directory",
+    "keywords": [
+      "AI",
+      "هوش مصنوعی",
+      "pgvector",
+      "vector",
+      "extension",
+      "No such file",
+      "نصب ماژول AI",
+      "postgresql extension",
+      "UndefinedFile"
+    ],
+    "description": "این خطا هنگام نصب ماژول AI در اودو ۱۹ رخ می‌دهد. ماژول AI به افزونه pgvector در PostgreSQL نیاز دارد که به صورت پیش‌فرض نصب نیست. باید pgvector را از سورس کامپایل و نصب کنید.",
+    "solutions": [
+      {
+        "title": "راه حل: کامپایل و نصب pgvector از سورس",
+        "steps": [
+          {
+            "number": 1,
+            "text": "پکیج‌های مورد نیاز برای کامپایل را نصب کنید",
+            "code": "sudo apt-get install -y postgresql-server-dev-14 build-essential git"
+          },
+          {
+            "number": 2,
+            "text": "سورس pgvector نسخه 0.7.4 را از گیت‌هاب کلون کنید",
+            "code": "cd /tmp && git clone --branch v0.7.4 https://github.com/pgvector/pgvector.git"
+          },
+          {
+            "number": 3,
+            "text": "pgvector را کامپایل و نصب کنید",
+            "code": "cd /tmp/pgvector && make && sudo make install"
+          },
+          {
+            "number": 4,
+            "text": "افزونه vector را در دیتابیس فعال کنید (نام دیتابیس خود را جایگزین کنید)",
+            "code": "sudo -u postgres psql -d YOUR_DB_NAME -c 'CREATE EXTENSION IF NOT EXISTS vector;'"
+          },
+          {
+            "number": 5,
+            "text": "ماژول AI را از طریق CLI نصب کنید",
+            "code": "python3 /opt/odoo/server/odoo-bin -c /etc/odoo.conf -d YOUR_DB_NAME -i ai --stop-after-init"
+          },
+          {
+            "number": 6,
+            "text": "سرور Odoo را ری‌استارت کنید",
+            "code": "sudo systemctl restart odoo"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "AI",
+      "pgvector",
+      "PostgreSQL",
+      "Extension",
+      "هوش مصنوعی",
+      "نصب"
+    ],
+    "dateAdded": "2026-02-07T19:00:00"
+  },
+  {
+    "id": "ai-google-403-forbidden-iran-260207",
+    "title": "🚫 خطای 403 Forbidden - Google Gemini API از ایران",
+    "type": "error",
+    "errorText": "Your client does not have permission to get URL /v1beta/models/gemini-2.5-flash:generateContent from this server. 403 Forbidden",
+    "keywords": [
+      "403",
+      "Forbidden",
+      "Google",
+      "Gemini",
+      "تحریم",
+      "ایران",
+      "Iran",
+      "sanctions",
+      "API blocked",
+      "permission denied",
+      "generativelanguage.googleapis.com",
+      "هوش مصنوعی",
+      "AI"
+    ],
+    "description": "این خطا زمانی رخ می‌دهد که سرور Odoo شما در ایران قرار دارد و Google Gemini API بر اساس IP سرور، دسترسی را مسدود می‌کند (تحریم‌ها). برای حل این مشکل باید از یک پراکسی واسط استفاده کنید.",
+    "solutions": [
+      {
+        "title": "راه حل ۱: پراکسی Vercel (رایگان - توصیه شده) ✅",
+        "steps": [
+          {
+            "number": 1,
+            "text": "یک اکانت رایگان در Vercel بسازید",
+            "code": "https://vercel.com/signup"
+          },
+          {
+            "number": 2,
+            "text": "Node.js و npm را روی کامپیوتر لوکال نصب کنید (اگر ندارید)",
+            "code": "https://nodejs.org"
+          },
+          {
+            "number": 3,
+            "text": "Vercel CLI را نصب کنید (از mirror چینی اگر npm بلاک بود)",
+            "code": "npm install -g vercel --registry https://registry.npmmirror.com"
+          },
+          {
+            "number": 4,
+            "text": "یک فولدر برای پراکسی بسازید و فایل‌ها را ایجاد کنید",
+            "code": "mkdir gemini-proxy && cd gemini-proxy && mkdir api"
+          },
+          {
+            "number": 5,
+            "text": "فایل vercel.json بسازید با محتوای زیر",
+            "code": "{\n  \"version\": 2,\n  \"rewrites\": [\n    { \"source\": \"/(.*)\", \"destination\": \"/api/proxy\" }\n  ]\n}"
+          },
+          {
+            "number": 6,
+            "text": "فایل package.json بسازید",
+            "code": "{\n  \"name\": \"gemini-proxy\",\n  \"version\": \"1.0.0\",\n  \"private\": true\n}"
+          },
+          {
+            "number": 7,
+            "text": "فایل api/proxy.js بسازید (کد پراکسی اصلی) - این کد درخواست‌ها را از سرور شما به Google فوروارد می‌کند",
+            "code": "export default async function handler(req, res) {\n  const GOOGLE_API_HOST = \"https://generativelanguage.googleapis.com\";\n  const url = new URL(req.url, `http://${req.headers.host}`);\n  const targetUrl = `${GOOGLE_API_HOST}${url.pathname}${url.search}`;\n  try {\n    const forwardHeaders = {};\n    for (const [key, value] of Object.entries(req.headers)) {\n      if (![\"host\", \"connection\", \"x-forwarded-for\", \"x-vercel-id\", \"x-real-ip\", \"accept-encoding\"].includes(key.toLowerCase())) {\n        forwardHeaders[key] = value;\n      }\n    }\n    let body = null;\n    if (req.method !== \"GET\" && req.method !== \"HEAD\") {\n      const chunks = [];\n      for await (const chunk of req) { chunks.push(chunk); }\n      body = Buffer.concat(chunks);\n    }\n    const response = await fetch(targetUrl, {\n      method: req.method,\n      headers: forwardHeaders,\n      body: body,\n    });\n    for (const [key, value] of response.headers.entries()) {\n      if (![\"transfer-encoding\", \"connection\", \"content-encoding\"].includes(key.toLowerCase())) {\n        res.setHeader(key, value);\n      }\n    }\n    const responseBody = await response.text();\n    res.status(response.status).send(responseBody);\n  } catch (error) {\n    res.status(502).json({ error: \"Proxy error\", message: error.message });\n  }\n}"
+          },
+          {
+            "number": 8,
+            "text": "در Vercel لاگین کنید و دیپلوی کنید",
+            "code": "vercel login\nvercel --yes --prod"
+          },
+          {
+            "number": 9,
+            "text": "آدرس پراکسی شما چیزی مثل این خواهد بود:",
+            "code": "https://gemini-proxy-XXXXX.vercel.app"
+          }
+        ]
+      },
+      {
+        "title": "راه حل ۲: پچ کردن Odoo برای استفاده از پراکسی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "بکاپ از فایل اصلی بگیرید",
+            "code": "cp /opt/odoo/server/odoo/addons/ai/utils/llm_api_service.py /opt/odoo/server/odoo/addons/ai/utils/llm_api_service.py.bak"
+          },
+          {
+            "number": 2,
+            "text": "یک اسکریپت پچ بسازید (فایل /tmp/patch_ai.py)",
+            "code": "import os\n\nfilepath = '/opt/odoo/server/odoo/addons/ai/utils/llm_api_service.py'\n\nwith open(filepath, 'r') as f:\n    content = f.read()\n\n# اضافه کردن متغیر قابل تنظیم\nold1 = '_logger = getLogger(__name__)'\nnew1 = \"\"\"_logger = getLogger(__name__)\n\n# Allow overriding Google API host via env var (for proxy/sanctions bypass)\nGOOGLE_API_HOST = os.getenv('ODOO_GOOGLE_API_HOST', 'https://generativelanguage.googleapis.com')\"\"\"\ncontent = content.replace(old1, new1, 1)\n\n# جایگزینی URL اول (OpenAI compatibility layer)\ncontent = content.replace(\n    'base_url = \"https://generativelanguage.googleapis.com/v1beta/openai\"',\n    'base_url = f\"{GOOGLE_API_HOST}/v1beta/openai\"',\n    1\n)\n\n# جایگزینی URL دوم (Native Gemini API)\ncontent = content.replace(\n    'base_url=\"https://generativelanguage.googleapis.com/v1beta\"',\n    'base_url=f\"{GOOGLE_API_HOST}/v1beta\"',\n    1\n)\n\nwith open(filepath, 'w') as f:\n    f.write(content)\n\nprint('Patch applied successfully')"
+          },
+          {
+            "number": 3,
+            "text": "اسکریپت پچ را اجرا کنید",
+            "code": "python3 /tmp/patch_ai.py"
+          },
+          {
+            "number": 4,
+            "text": "متغیر محیطی پراکسی را به سرویس Odoo اضافه کنید (آدرس Vercel خودتان را جایگزین کنید)",
+            "code": "# فایل /etc/systemd/system/odoo.service را ادیت کنید\n# زیر [Service] خط زیر را اضافه کنید:\nEnvironment=ODOO_GOOGLE_API_HOST=https://YOUR-PROXY.vercel.app"
+          },
+          {
+            "number": 5,
+            "text": "سرویس را ریلود و ری‌استارت کنید",
+            "code": "sudo systemctl daemon-reload\nsudo systemctl restart odoo"
+          },
+          {
+            "number": 6,
+            "text": "تأیید کنید Odoo فعال است",
+            "code": "sudo systemctl status odoo"
+          }
+        ]
+      },
+      {
+        "title": "راه حل ۳: استفاده از OpenAI به جای Google (جایگزین)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "OpenAI API از ایران بلاک نیست! (HTTP 401 = نیاز به کلید، نه بلاک)",
+            "code": "curl -s -o /dev/null -w '%{http_code}' https://api.openai.com/v1/models\n# نتیجه: 401 (نیاز به کلید، اما بلاک نیست)"
+          },
+          {
+            "number": 2,
+            "text": "یک API Key از OpenAI بگیرید",
+            "code": "https://platform.openai.com/api-keys"
+          },
+          {
+            "number": 3,
+            "text": "در Odoo به تنظیمات بروید: Settings > General Settings > Integrations",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "OpenAI API Key را وارد کنید و ذخیره کنید",
+            "code": ""
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "AI",
+      "Google",
+      "Gemini",
+      "403",
+      "Forbidden",
+      "تحریم",
+      "ایران",
+      "Proxy",
+      "Vercel",
+      "هوش مصنوعی"
+    ],
+    "dateAdded": "2026-02-07T19:00:00"
+  },
+  {
+    "id": "ai-no-api-key-260207",
+    "title": "🔑 خطای عدم تنظیم API Key برای AI",
+    "type": "error",
+    "errorText": "No API key set for provider 'google'",
+    "keywords": [
+      "API key",
+      "کلید API",
+      "No API key",
+      "google",
+      "openai",
+      "provider",
+      "AI",
+      "هوش مصنوعی",
+      "تنظیمات"
+    ],
+    "description": "این خطا زمانی رخ می‌دهد که ماژول AI نصب شده ولی کلید API برای ارائه‌دهنده (Google Gemini یا OpenAI) تنظیم نشده است.",
+    "solutions": [
+      {
+        "title": "راه حل ۱: تنظیم کلید Google Gemini",
+        "steps": [
+          {
+            "number": 1,
+            "text": "به سایت Google AI Studio بروید و یک API Key رایگان بسازید",
+            "code": "https://aistudio.google.com/apikey"
+          },
+          {
+            "number": 2,
+            "text": "در Odoo به مسیر Settings > General Settings بروید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "بخش Integrations را پیدا کنید",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "تیک Google Gemini API Key را بزنید و کلید را وارد کنید",
+            "code": ""
+          },
+          {
+            "number": 5,
+            "text": "ذخیره کنید (Save)",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "راه حل ۲: تنظیم کلید OpenAI",
+        "steps": [
+          {
+            "number": 1,
+            "text": "به سایت OpenAI بروید و یک API Key بسازید",
+            "code": "https://platform.openai.com/api-keys"
+          },
+          {
+            "number": 2,
+            "text": "در Odoo: Settings > General Settings > Integrations",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "تیک OpenAI API Key را بزنید و کلید را وارد کنید",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "ذخیره کنید",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "راه حل ۳: تنظیم از طریق متغیر محیطی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "می‌توانید API Key را از طریق متغیر محیطی هم تنظیم کنید",
+            "code": "# برای Google Gemini:\nEnvironment=ODOO_AI_GEMINI_TOKEN=YOUR_GEMINI_KEY\n\n# برای OpenAI:\nEnvironment=ODOO_AI_CHATGPT_TOKEN=YOUR_OPENAI_KEY"
+          },
+          {
+            "number": 2,
+            "text": "این خط را در فایل سرویس /etc/systemd/system/odoo.service زیر [Service] اضافه کنید",
+            "code": "sudo systemctl daemon-reload && sudo systemctl restart odoo"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "AI",
+      "API Key",
+      "Google",
+      "OpenAI",
+      "Gemini",
+      "تنظیمات",
+      "هوش مصنوعی"
+    ],
+    "dateAdded": "2026-02-07T19:00:00"
+  },
+  {
+    "id": "ai-gzip-content-decoding-260207",
+    "title": "🔄 خطای ContentDecodingError - مشکل gzip در پراکسی AI",
+    "type": "error",
+    "errorText": "ContentDecodingError(DecodeError('Received response with content-encoding: gzip, but failed to decode it.', error('Error -3 while decompressing data: incorrect header check')))",
+    "keywords": [
+      "ContentDecodingError",
+      "DecodeError",
+      "gzip",
+      "content-encoding",
+      "decompressing",
+      "incorrect header check",
+      "proxy",
+      "پراکسی",
+      "AI",
+      "هوش مصنوعی"
+    ],
+    "description": "این خطا زمانی رخ می‌دهد که از پراکسی واسط (مثل Vercel یا Cloudflare Worker) برای Google Gemini API استفاده می‌کنید و پراکسی هدر content-encoding: gzip را فوروارد می‌کند در حالی که بدنه پاسخ را از حالت فشرده خارج کرده. باید هدرهای accept-encoding و content-encoding را در پراکسی فیلتر کنید.",
+    "solutions": [
+      {
+        "title": "راه حل: حذف هدرهای encoding از پراکسی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "در فایل پراکسی (api/proxy.js)، هدر accept-encoding را از درخواست ارسالی حذف کنید",
+            "code": "// در بخش forwardHeaders، accept-encoding را به لیست حذف اضافه کنید:\nif (![\"host\", \"connection\", \"x-forwarded-for\", \"accept-encoding\"].includes(key.toLowerCase())) {\n  forwardHeaders[key] = value;\n}"
+          },
+          {
+            "number": 2,
+            "text": "هدر content-encoding را از پاسخ حذف کنید",
+            "code": "// در بخش response headers، content-encoding را فیلتر کنید:\nif (![\"transfer-encoding\", \"connection\", \"content-encoding\"].includes(key.toLowerCase())) {\n  res.setHeader(key, value);\n}"
+          },
+          {
+            "number": 3,
+            "text": "پراکسی را مجدد دیپلوی کنید",
+            "code": "vercel --yes --prod"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "AI",
+      "Proxy",
+      "gzip",
+      "ContentDecoding",
+      "Vercel",
+      "پراکسی",
+      "هوش مصنوعی"
+    ],
+    "dateAdded": "2026-02-07T19:00:00"
+  },
+  {
+    "id": "ai-complete-setup-iran-260207",
+    "title": "📋 راهنمای کامل راه‌اندازی ماژول AI اودو ۱۹ در ایران",
+    "type": "guide",
+    "errorText": "",
+    "keywords": [
+      "AI",
+      "هوش مصنوعی",
+      "ایران",
+      "راهنما",
+      "نصب کامل",
+      "setup",
+      "Gemini",
+      "Google",
+      "pgvector",
+      "proxy",
+      "پراکسی",
+      "تحریم",
+      "sanctions"
+    ],
+    "description": "راهنمای گام‌به‌گام کامل نصب و راه‌اندازی ماژول هوش مصنوعی Odoo 19 Enterprise روی سرور ایرانی. شامل نصب pgvector، تنظیم API Key، ساخت پراکسی Vercel برای دور زدن تحریم Google، و پچ کردن Odoo.",
+    "solutions": [
+      {
+        "title": "مرحله ۱: نصب pgvector (پیش‌نیاز دیتابیسی)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "پکیج‌های توسعه PostgreSQL و ابزار کامپایل را نصب کنید",
+            "code": "sudo apt-get install -y postgresql-server-dev-14 build-essential git"
+          },
+          {
+            "number": 2,
+            "text": "سورس pgvector 0.7.4 را کلون و کامپایل کنید",
+            "code": "cd /tmp && git clone --branch v0.7.4 https://github.com/pgvector/pgvector.git && cd pgvector && make && sudo make install"
+          },
+          {
+            "number": 3,
+            "text": "افزونه vector را در دیتابیس فعال کنید",
+            "code": "sudo -u postgres psql -d YOUR_DB -c 'CREATE EXTENSION IF NOT EXISTS vector;'"
+          }
+        ]
+      },
+      {
+        "title": "مرحله ۲: نصب ماژول AI",
+        "steps": [
+          {
+            "number": 1,
+            "text": "ماژول AI را از CLI نصب کنید (۸ زیرماژول خودکار نصب می‌شود)",
+            "code": "python3 /opt/odoo/server/odoo-bin -c /etc/odoo.conf -d YOUR_DB -i ai --stop-after-init"
+          },
+          {
+            "number": 2,
+            "text": "ماژول‌های نصب شده: ai, ai_account, ai_auto_install, ai_documents, ai_documents_account, ai_documents_source, ai_fields, ai_server_actions",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "مرحله ۳: ساخت API Key گوگل جمینای (رایگان)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "به Google AI Studio بروید و لاگین کنید",
+            "code": "https://aistudio.google.com/apikey"
+          },
+          {
+            "number": 2,
+            "text": "روی Create API Key کلیک کنید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "کلید را کپی و ذخیره کنید (Free tier: 15 RPM, 1M tokens/day)",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "مرحله ۴: تنظیم API Key در Odoo",
+        "steps": [
+          {
+            "number": 1,
+            "text": "وارد Odoo شوید و به Settings > General Settings بروید",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "بخش Integrations را پیدا کنید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "تیک Google Gemini API Key را بزنید و کلید را وارد و ذخیره کنید",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "مرحله ۵: ساخت پراکسی Vercel (دور زدن تحریم Google)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "⚠️ سرور ایرانی مستقیماً به Google API دسترسی ندارد (403 Forbidden). نیاز به پراکسی هست.",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "اکانت رایگان Vercel بسازید: https://vercel.com/signup",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "Vercel CLI نصب کنید (اگر npm بلاک بود از mirror چینی استفاده کنید)",
+            "code": "npm install -g vercel --registry https://registry.npmmirror.com"
+          },
+          {
+            "number": 4,
+            "text": "فولدر پراکسی بسازید: vercel.json + package.json + api/proxy.js (کد کامل در خطای ai-google-403-forbidden-iran موجود است)",
+            "code": ""
+          },
+          {
+            "number": 5,
+            "text": "لاگین و دیپلوی کنید",
+            "code": "vercel login && vercel --yes --prod"
+          },
+          {
+            "number": 6,
+            "text": "آدرس پراکسی را یادداشت کنید (مثلاً https://your-proxy.vercel.app)",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "مرحله ۶: پچ کردن Odoo برای استفاده از پراکسی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "بکاپ از فایل اصلی بگیرید",
+            "code": "cp /opt/odoo/server/odoo/addons/ai/utils/llm_api_service.py /opt/odoo/server/odoo/addons/ai/utils/llm_api_service.py.bak"
+          },
+          {
+            "number": 2,
+            "text": "اسکریپت پچ را اجرا کنید (پچ URL های Google را قابل تنظیم می‌کند)",
+            "code": "python3 /tmp/patch_ai.py"
+          },
+          {
+            "number": 3,
+            "text": "در فایل سرویس /etc/systemd/system/odoo.service متغیر محیطی اضافه کنید",
+            "code": "# زیر خط [Service] اضافه کنید:\nEnvironment=ODOO_GOOGLE_API_HOST=https://YOUR-PROXY.vercel.app"
+          },
+          {
+            "number": 4,
+            "text": "سرویس را ریلود و ری‌استارت کنید",
+            "code": "sudo systemctl daemon-reload && sudo systemctl restart odoo"
+          }
+        ]
+      },
+      {
+        "title": "مرحله ۷: تست نهایی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "وارد Odoo شوید و Ask AI را باز کنید",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "یک پیام بفرستید (مثلاً: سلام)",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "✅ اگر پاسخ دریافت کردید، همه چیز درست کار می‌کند!",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "نکات مهم و اطلاعات تکمیلی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "📌 Vercel رایگان: 100,000 درخواست/ماه (بیش از کافی برای AI)",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "📌 Google Gemini رایگان: 15 درخواست/دقیقه، 1 میلیون توکن/روز",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "📌 OpenAI از ایران بلاک نیست (جایگزین): فقط API Key لازمه",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "📌 workers.dev از ایران فیلتر شده - از Cloudflare Worker استفاده نکنید",
+            "code": ""
+          },
+          {
+            "number": 5,
+            "text": "📌 Cloudflare WARP از ایران وصل نمی‌شود (تست شده ❌)",
+            "code": ""
+          },
+          {
+            "number": 6,
+            "text": "📌 فایل‌های تغییر یافته: /opt/odoo/server/odoo/addons/ai/utils/llm_api_service.py + /etc/systemd/system/odoo.service",
+            "code": ""
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "AI",
+      "Guide",
+      "راهنما",
+      "هوش مصنوعی",
+      "ایران",
+      "تحریم",
+      "pgvector",
+      "Vercel",
+      "Google Gemini",
+      "Proxy",
+      "نصب کامل"
+    ],
+    "dateAdded": "2026-02-07T19:00:00"
   }
 ]
