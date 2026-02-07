@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تست جستجو</title>
+    <style>
+        body { font-family: Tahoma; padding: 20px; background: #f5f5f5; }
+        .search { padding: 15px; background: white; border-radius: 10px; margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 5px; }
+        .result { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; border-right: 4px solid #3498db; }
+        .result h3 { margin: 0 0 10px 0; color: #2c3e50; }
+        .result p { margin: 5px 0; color: #666; }
+        .highlight { background: yellow; padding: 2px 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 تست جستجوی خطاها</h1>
+    
+    <div class="search">
+        <input type="text" id="search" placeholder="جستجو کنید: Something went wrong" value="Something went wrong">
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        let errors = [];
+        
+        // بارگذاری JSON
+        fetch('errors.json')
+            .then(r => r.json())
+            .then(data => {
+                errors = data;
+                console.log('✅ ' + errors.length + ' خطا بارگذاری شد');
+                search();
+            })
+            .catch(err => {
+                document.getElementById('results').innerHTML = '<p style="color:red;">❌ خطا در بارگذاری: ' + err + '</p>';
+            });
+        
+        // جستجو
+        function search() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const results = document.getElementById('results');
+            
+            if (!query) {
+                results.innerHTML = '<p>لطفاً چیزی جستجو کنید</p>';
+                return;
+            }
+            
+            const found = errors.filter(e => {
+                const text = JSON.stringify(e).toLowerCase();
+                return text.includes(query);
+            });
+            
+            if (found.length === 0) {
+                results.innerHTML = '<p style="color:red;">❌ هیچ نتیجه‌ای یافت نشد برای: <strong>' + query + '</strong></p>';
+            } else {
+                results.innerHTML = '<p style="color:green;">✅ ' + found.length + ' نتیجه یافت شد:</p>';
+                found.forEach(e => {
+                    results.innerHTML += `
+                        <div class="result">
+                            <h3>${e.title}</h3>
+                            <p><strong>ID:</strong> ${e.id}</p>
+                            <p><strong>نوع:</strong> ${e.type}</p>
+                            <p><strong>کلمات کلیدی:</strong> ${e.keywords.join(', ')}</p>
+                            <p><strong>توضیح:</strong> ${e.description}</p>
+                        </div>
+                    `;
+                });
+            }
+        }
+        
+        document.getElementById('search').addEventListener('input', search);
+    </script>
+</body>
+</html>

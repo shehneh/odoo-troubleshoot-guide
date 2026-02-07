@@ -1,0 +1,169 @@
+[
+  {
+    "id": "sample-error-1",
+    "title": "🔴 نمونه خطا - نصب PostgreSQL",
+    "type": "error",
+    "errorText": "could not connect to server: Connection refused",
+    "keywords": [
+      "postgresql",
+      "connection",
+      "refused",
+      "نصب",
+      "اتصال"
+    ],
+    "description": "این خطا زمانی رخ می‌دهد که PostgreSQL نصب نشده یا اجرا نیست.",
+    "solutions": [
+      {
+        "title": "راه حل ۱: نصب PostgreSQL",
+        "steps": [
+          {
+            "number": 1,
+            "text": "PostgreSQL را دانلود و نصب کنید",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "سرویس PostgreSQL را شروع کنید",
+            "code": "net start postgresql-x64-16"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "PostgreSQL",
+      "نصب",
+      "Connection"
+    ]
+  },
+  {
+    "id": "خطای-نمونه-260207",
+    "title": " خطای نمونه",
+    "type": "error",
+    "errorText": "Sample error for testing",
+    "keywords": [
+      " خطای نمونه",
+      "Sample error for testing"
+    ],
+    "description": "این یک خطای تستی است",
+    "solutions": [
+      {
+        "title": "راه حل",
+        "steps": [
+          {
+            "number": 1,
+            "text": "راه حل تستی",
+            "code": ""
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "General"
+    ],
+    "dateAdded": "2026-02-07T08:57:37.317333"
+  },
+  {
+    "id": "settings-field-undefined-260207",
+    "title": "⚠️ خطای باز نشدن تنظیمات - فیلد تعریف نشده",
+    "type": "warning",
+    "errorText": "UncaughtPromiseError > OwlError\nUncaught Promise > An error occured in the owl lifecycle\nOwlError: An error occured in the owl lifecycle (see this Error's \"cause\" property)\nCaused by: Error: \"res.config.settings\".\"barcodelookup_api_key\" field is undefined",
+    "keywords": [
+      "settings",
+      "تنظیمات",
+      "field is undefined",
+      "UncaughtPromiseError",
+      "OwlError",
+      "res.config.settings",
+      "barcodelookup",
+      "باز نمیشه",
+      "Something went wrong"
+    ],
+    "description": "این خطا زمانی رخ می‌دهد که وارد بخش تنظیمات می‌شوید و یک فیلد در دیتابیس موجود است اما در کد ماژول تعریف نشده. معمولاً بعد از حذف یک ماژول یا آپدیت ناقص رخ می‌دهد.",
+    "solutions": [
+      {
+        "title": "راه حل ۱: آپدیت و آپگرید ماژول‌ها",
+        "steps": [
+          {
+            "number": 1,
+            "text": "از طریق Developer Mode وارد Apps شوید",
+            "code": "فعالسازی Developer Mode: Settings > Activate Developer Mode"
+          },
+          {
+            "number": 2,
+            "text": "لیست ماژول‌ها را آپدیت کنید",
+            "code": "Apps > Update Apps List"
+          },
+          {
+            "number": 3,
+            "text": "ماژول مربوطه را پیدا کنید (در این مثال: Barcode یا ماژولی که barcodelookup_api_key دارد) و Upgrade کنید",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "سرور Odoo را ری‌استارت کنید",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "راه حل ۲: حذف فیلد از دیتابیس (خطرناک)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "⚠️ هشدار: این عملیات روی دیتابیس است! حتماً backup بگیرید",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "به pgAdmin وصل شوید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "فیلد مشکل‌دار را از جدول ir_model_fields حذف کنید",
+            "code": "DELETE FROM ir_model_fields WHERE name = 'barcodelookup_api_key' AND model = 'res.config.settings';"
+          },
+          {
+            "number": 4,
+            "text": "Cache Odoo را پاک کنید",
+            "code": "از منوی Settings > Technical > Database Structure > Clear Cache"
+          },
+          {
+            "number": 5,
+            "text": "سرور را ری‌استارت کنید",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "راه حل ۳: نصب مجدد ماژول مشکل‌دار",
+        "steps": [
+          {
+            "number": 1,
+            "text": "ماژولی که این فیلد را تعریف کرده (مثلاً stock_barcode یا ماژول سفارشی) را Uninstall کنید",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "سرور را ری‌استارت کنید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "مجدد ماژول را Install کنید",
+            "code": ""
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "Settings",
+      "Field Undefined",
+      "OwlError",
+      "UncaughtPromise",
+      "تنظیمات",
+      "Barcode"
+    ],
+    "dateAdded": "2026-02-07T12:10:00"
+  }
+]

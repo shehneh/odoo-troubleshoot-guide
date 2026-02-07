@@ -463,6 +463,8 @@
             <span class="quick-link" onclick="filterByTag('postgresql')">PostgreSQL</span>
             <span class="quick-link" onclick="filterByTag('authentication failed')">authentication failed</span>
             <span class="quick-link" onclick="filterByTag('openpg')">openpg</span>
+            <span class="quick-link" onclick="filterByTag('something went wrong')">Something went wrong</span>
+            <span class="quick-link" onclick="filterByTag('field is undefined')">field is undefined</span>
             <span class="quick-link" onclick="filterByTag('connection')">اتصال</span>
             <span class="quick-link" onclick="filterByTag('access denied')">Access Denied</span>
         </div>
@@ -2111,6 +2113,151 @@ pip install -r requirements.txt
             </div>
 
             <!-- راهنمای ساخت دیتابیس -->
+            <!-- خطای Something went wrong - field is undefined -->
+            <div class="problem-card" data-keywords="something went wrong field is undefined owlerror uncaughtpromiseerror owl lifecycle res.config.settings barcodelookup_api_key settings تنظیمات باز نمیشه خطا صفحه تنظیمات ماژول حذف شده parseFieldNode">
+                <div class="problem-header warning">
+                    <h3>⚠️ Something went wrong - فیلد تعریف نشده در تنظیمات</h3>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="problem-content">
+                    <div class="error-box">Something went wrong... If you really are stuck, share the report with your friendly support service
+
+UncaughtPromiseError > OwlError
+Uncaught Promise > An error occured in the owl lifecycle (see this Error's "cause" property)
+
+Caused by: Error: "res.config.settings"."barcodelookup_api_key" field is undefined.
+    parseFieldNode@...web.assets_web.min.js
+    visit > visitChildren > visitXML > parse</div>
+
+                    <p style="margin-bottom: 20px; line-height: 1.8; color: #444;">
+                        این خطا زمانی رخ می‌دهد که وارد بخش <strong>Settings (تنظیمات)</strong> می‌شوید و یک فیلد در دیتابیس وجود دارد اما در کد ماژول تعریف نشده است.
+                        معمولاً بعد از <strong>حذف یک ماژول</strong> یا <strong>آپدیت ناقص</strong> این خطا ظاهر می‌شود.
+                        در این مثال فیلد <code>barcodelookup_api_key</code> در مدل <code>res.config.settings</code> وجود ندارد.
+                    </p>
+
+                    <div class="solution-section">
+                        <h4>💡 راه حل ۱: آپدیت و آپگرید ماژول‌ها</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>Developer Mode را فعال کنید:</strong></p>
+                                <p>Settings → Activate Developer Mode</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>لیست ماژول‌ها را آپدیت کنید:</strong></p>
+                                <p>Apps → Update Apps List</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>ماژول مربوطه را Upgrade کنید:</strong></p>
+                                <p>ماژولی که فیلد <code>barcodelookup_api_key</code> را تعریف کرده (مثلاً stock_barcode یا ماژول سفارشی) را پیدا و Upgrade کنید</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>سرور Odoo را ری‌استارت کنید</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="solution-section">
+                        <h4>💡 راه حل ۲: حذف فیلد از دیتابیس (⚠️ با احتیاط)</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>⚠️ حتماً قبل از هر کاری backup بگیرید!</strong></p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p><strong>وارد pgAdmin یا psql شوید و این دستور را اجرا کنید:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    DELETE FROM ir_model_fields WHERE name = 'barcodelookup_api_key' AND model = 'res.config.settings';
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p><strong>اگر ستون در جدول باقی مانده:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    ALTER TABLE res_config_settings DROP COLUMN IF EXISTS barcodelookup_api_key;
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <p><strong>Cache دیتابیس را پاک کنید:</strong></p>
+                                <p>Settings → Technical → Database Structure → Clear Cache</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <p><strong>سرور را ری‌استارت کنید</strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="solution-section">
+                        <h4>💡 راه حل ۳: نصب مجدد ماژول مشکل‌دار</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p>ماژولی که این فیلد را تعریف کرده (مثلاً <code>stock_barcode</code> یا ماژول سفارشی) را <strong>Uninstall</strong> کنید</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <p>سرور را ری‌استارت کنید</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <p>مجدد ماژول را <strong>Install</strong> کنید</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="solution-section">
+                        <h4>💡 راه حل ۴: رفع عمومی (اگر نام فیلد فرق دارد)</h4>
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <p><strong>نام فیلد مشکل‌دار را از متن خطا پیدا کنید:</strong></p>
+                                <div class="code-block">
+                                    <button class="copy-btn" onclick="copyCode(this)">کپی</button>
+                                    Caused by: Error: "res.config.settings"."FIELD_NAME" field is undefined
+                                </div>
+                                <p style="margin-top:10px;">مقدار <code>FIELD_NAME</code> را یادداشت کنید و در دستورات بالا جایگزین <code>barcodelookup_api_key</code> کنید.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="keywords">
+                        <span class="tag">Something went wrong</span>
+                        <span class="tag">OwlError</span>
+                        <span class="tag">field is undefined</span>
+                        <span class="tag">Settings</span>
+                        <span class="tag">تنظیمات</span>
+                        <span class="tag">res.config.settings</span>
+                        <span class="tag">parseFieldNode</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="problem-card" data-keywords="create database how to new database manager setup first run">
                 <div class="problem-header success">
                     <h3>✨ راهنمای ساخت دیتابیس جدید</h3>
@@ -2192,18 +2339,23 @@ pip install -r requirements.txt
         // Search functionality
         const searchInput = document.getElementById('searchInput');
         const clearBtn = document.getElementById('clearBtn');
-        const problemCards = document.querySelectorAll('.problem-card');
         const resultsInfo = document.getElementById('resultsInfo');
         const noResults = document.getElementById('noResults');
+
+        // تابع برای گرفتن لیست زنده کارت‌ها (شامل کارت‌های JSON)
+        function getAllCards() {
+            return document.querySelectorAll('.problem-card');
+        }
 
         searchInput.addEventListener('input', performSearch);
 
         function performSearch() {
+            const cards = getAllCards();
             const query = searchInput.value.toLowerCase().trim();
             
             if (query.length === 0) {
                 clearBtn.style.display = 'none';
-                problemCards.forEach(card => {
+                cards.forEach(card => {
                     card.classList.remove('hidden');
                     card.classList.remove('open');
                 });
@@ -2217,8 +2369,8 @@ pip install -r requirements.txt
             let visibleCount = 0;
             const queryWords = query.split(/\s+/);
 
-            problemCards.forEach(card => {
-                const keywords = card.dataset.keywords.toLowerCase();
+            cards.forEach(card => {
+                const keywords = (card.dataset.keywords || '').toLowerCase();
                 const content = card.textContent.toLowerCase();
                 const combined = keywords + ' ' + content;
                 
@@ -2237,11 +2389,10 @@ pip install -r requirements.txt
                 }
             });
 
+            resultsInfo.textContent = `${visibleCount} از ${cards.length} مشکل یافت شد`;
             if (visibleCount > 0) {
-                resultsInfo.textContent = `${visibleCount} نتیجه یافت شد`;
                 noResults.style.display = 'none';
             } else {
-                resultsInfo.textContent = '';
                 noResults.style.display = 'block';
             }
         }
@@ -2249,7 +2400,7 @@ pip install -r requirements.txt
         function clearSearch() {
             searchInput.value = '';
             clearBtn.style.display = 'none';
-            problemCards.forEach(card => {
+            getAllCards().forEach(card => {
                 card.classList.remove('hidden');
                 card.classList.remove('open');
             });
@@ -2284,11 +2435,18 @@ pip install -r requirements.txt
             clearBtn.style.display = 'block';
             
             // Score each card based on how many query words it contains
+            const cards = getAllCards();
             let bestMatch = null;
             let bestScore = 0;
             
             // Define error patterns and their matching keywords
             const errorPatterns = [
+                { pattern: /something went wrong/i, keyword: 'something went wrong' },
+                { pattern: /field is undefined/i, keyword: 'field is undefined' },
+                { pattern: /owlerror|owl lifecycle/i, keyword: 'owlerror' },
+                { pattern: /uncaughtpromiseerror/i, keyword: 'uncaughtpromiseerror' },
+                { pattern: /res\.config\.settings/i, keyword: 'res.config.settings' },
+                { pattern: /parseFieldNode/i, keyword: 'parsefieldnode' },
                 { pattern: /connection refused.*10061|0x0000274D/i, keyword: 'connection refused' },
                 { pattern: /password authentication failed/i, keyword: 'password authentication failed' },
                 { pattern: /role.*is not permitted to log in|not permitted to log in/i, keyword: 'not permitted to log in' },
@@ -2309,8 +2467,8 @@ pip install -r requirements.txt
                 }
             }
 
-            problemCards.forEach(card => {
-                const keywords = card.dataset.keywords.toLowerCase();
+            cards.forEach(card => {
+                const keywords = (card.dataset.keywords || '').toLowerCase();
                 const content = card.textContent.toLowerCase();
                 const errorBoxes = card.querySelectorAll('.error-box');
                 let errorTexts = '';
@@ -2350,7 +2508,7 @@ pip install -r requirements.txt
             });
 
             // Hide all cards and show only best match
-            problemCards.forEach(card => {
+            cards.forEach(card => {
                 card.classList.add('hidden');
                 card.classList.remove('open');
             });
@@ -2409,5 +2567,8 @@ pip install -r requirements.txt
             }
         });
     </script>
+    
+    <!-- بارگذاری خطاها از JSON -->
+    <script src="errors-loader.js"></script>
 </body>
 </html>
