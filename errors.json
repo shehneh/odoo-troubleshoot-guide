@@ -755,5 +755,310 @@
       "نصب کامل"
     ],
     "dateAdded": "2026-02-07T19:00:00"
+  },
+  {
+    "id": "reset-master-password-iranserver",
+    "title": "🔐 راهنمای ریست Master Password در IranServer",
+    "type": "guide",
+    "errorText": "",
+    "keywords": [
+      "master password",
+      "admin password",
+      "reset",
+      "ریست",
+      "مستر پسورد",
+      "admin_passwd",
+      "iranserver",
+      "ایران سرور",
+      "تغییر پسورد",
+      "odoo.conf"
+    ],
+    "description": "راهنمای کامل برای پیدا کردن، تغییر و ریست کردن Master Password (admin_passwd) در سرور Ubuntu - IranServer. Master Password برای مدیریت دیتابیس‌ها (ساخت، حذف، بکاپ) استفاده می‌شود.",
+    "solutions": [
+      {
+        "title": "📌 Master Password چیست؟",
+        "steps": [
+          {
+            "number": 1,
+            "text": "Master Password (admin_passwd) برای این کارها لازم است:",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "✅ ساخت دیتابیس جدید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "✅ حذف دیتابیس",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "✅ گرفتن بکاپ از دیتابیس",
+            "code": ""
+          },
+          {
+            "number": 5,
+            "text": "✅ بازگردانی بکاپ",
+            "code": ""
+          },
+          {
+            "number": 6,
+            "text": "✅ تغییر نام دیتابیس",
+            "code": ""
+          },
+          {
+            "number": 7,
+            "text": "📝 این پسورد در فایل odoo.conf با کلید admin_passwd ذخیره می‌شود",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "🔍 راه حل 1: پیدا کردن Master Password فعلی",
+        "steps": [
+          {
+            "number": 1,
+            "text": "اتصال به سرور از طریق SSH:",
+            "code": "ssh root@185.255.88.103 -p 3031"
+          },
+          {
+            "number": 2,
+            "text": "مشاهده Master Password فعلی:",
+            "code": "cat /etc/odoo.conf | grep admin_passwd"
+          },
+          {
+            "number": 3,
+            "text": "اگه خروجی این شکلی بود، پسورد plain text هست:",
+            "code": "admin_passwd = admin@2026!"
+          },
+          {
+            "number": 4,
+            "text": "اگه خروجی این شکلی بود، پسورد هش شده (encrypted) هست و نمیشه decode کرد:",
+            "code": "admin_passwd = $pbkdf2-sha512$600000$..."
+          },
+          {
+            "number": 5,
+            "text": "⚠️ اگه پسورد هش شده باشه، باید ریست کنید (راه حل 2 یا 3)",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "✏️ راه حل 2: ریست Master Password با ویرایش دستی (توصیه می‌شود)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "⚠️ اول بک‌آپ از فایل کانفیگ بگیرید:",
+            "code": "cp /etc/odoo.conf /etc/odoo.conf.backup.$(date +%Y%m%d)"
+          },
+          {
+            "number": 2,
+            "text": "ویرایش فایل کانفیگ با nano:",
+            "code": "nano /etc/odoo.conf"
+          },
+          {
+            "number": 3,
+            "text": "خط admin_passwd را پیدا کنید و پسورد جدید بنویسید:",
+            "code": "admin_passwd = YourNewPassword2026!"
+          },
+          {
+            "number": 4,
+            "text": "ذخیره و خروج: Ctrl+X سپس Y سپس Enter",
+            "code": ""
+          },
+          {
+            "number": 5,
+            "text": "ری‌استارت Odoo:",
+            "code": "systemctl restart odoo"
+          },
+          {
+            "number": 6,
+            "text": "چک کردن وضعیت Odoo:",
+            "code": "systemctl status odoo"
+          },
+          {
+            "number": 7,
+            "text": "✅ حالا با پسورد جدید میتونید دیتابیس‌ها رو مدیریت کنید",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "⚡ راه حل 3: ریست سریع با دستور sed (یک خطی)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "اتصال به سرور:",
+            "code": "ssh root@185.255.88.103 -p 3031"
+          },
+          {
+            "number": 2,
+            "text": "بک‌آپ از کانفیگ:",
+            "code": "cp /etc/odoo.conf /etc/odoo.conf.backup"
+          },
+          {
+            "number": 3,
+            "text": "تغییر پسورد با یک دستور:",
+            "code": "sed -i 's/^admin_passwd = .*/admin_passwd = admin@2026!/' /etc/odoo.conf"
+          },
+          {
+            "number": 4,
+            "text": "بررسی تغییرات:",
+            "code": "cat /etc/odoo.conf | grep admin_passwd"
+          },
+          {
+            "number": 5,
+            "text": "ری‌استارت Odoo:",
+            "code": "systemctl restart odoo"
+          }
+        ]
+      },
+      {
+        "title": "🔄 راه حل 4: حذف Master Password (⚠️ غیرامن - فقط برای تست)",
+        "steps": [
+          {
+            "number": 1,
+            "text": "⚠️ توجه: بدون Master Password هرکسی می‌تواند دیتابیس‌ها را مدیریت کند!",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "پاک کردن Master Password:",
+            "code": "sed -i 's/^admin_passwd = .*/admin_passwd = /' /etc/odoo.conf"
+          },
+          {
+            "number": 3,
+            "text": "ری‌استارت Odoo:",
+            "code": "systemctl restart odoo"
+          },
+          {
+            "number": 4,
+            "text": "⚠️ این روش فقط برای محیط تست مناسب است",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "📋 راه حل 5: اسکریپت خودکار ریست همه دسترسی‌ها",
+        "steps": [
+          {
+            "number": 1,
+            "text": "این اسکریپت Master Password، PostgreSQL و Odoo config را ریست می‌کند:",
+            "code": "#!/bin/bash\n# Reset Master Password\nsed -i 's/^admin_passwd = .*/admin_passwd = admin@2026!/' /etc/odoo.conf\n\n# Update PostgreSQL User\nsudo -u postgres psql -c \"ALTER USER odoo WITH PASSWORD 'odoo_secure_pass_2026';\"\n\n# Update Odoo Config\nsed -i 's/^db_user = .*/db_user = odoo/' /etc/odoo.conf\nsed -i 's/^db_password = .*/db_password = odoo_secure_pass_2026/' /etc/odoo.conf\n\n# Grant Privileges\nsudo -u postgres psql -c \"GRANT ALL PRIVILEGES ON DATABASE siraf TO odoo;\"\n\n# Restart Services\nsystemctl restart postgresql\nsystemctl restart odoo\n\necho \"All credentials reset successfully!\"\necho \"Master Password: admin@2026!\"\necho \"DB User: odoo\"\necho \"DB Password: odoo_secure_pass_2026\""
+          },
+          {
+            "number": 2,
+            "text": "ذخیره اسکریپت بالا در فایل reset_all.sh و اجرا:",
+            "code": "chmod +x reset_all.sh\n./reset_all.sh"
+          }
+        ]
+      },
+      {
+        "title": "🔒 نکات امنیتی مهم",
+        "steps": [
+          {
+            "number": 1,
+            "text": "✅ از پسوردهای قوی استفاده کنید (حداقل 12 کاراکتر با ترکیب حروف بزرگ، کوچک، اعداد و علائم)",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "✅ Master Password را در جای امنی ذخیره کنید (password manager)",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "✅ به صورت دوره‌ای پسوردها را تغییر دهید",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "✅ قبل از هر تغییری بک‌آپ بگیرید",
+            "code": ""
+          },
+          {
+            "number": 5,
+            "text": "❌ Master Password را در کدهای عمومی قرار ندهید",
+            "code": ""
+          },
+          {
+            "number": 6,
+            "text": "❌ هرگز Master Password را خالی نگذارید (مگر برای تست)",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "✅ تست Master Password جدید",
+        "steps": [
+          {
+            "number": 1,
+            "text": "به آدرس Odoo بروید:",
+            "code": "http://YOUR_SERVER_IP:8069"
+          },
+          {
+            "number": 2,
+            "text": "از منوی بالا Database Manager را انتخاب کنید",
+            "code": ""
+          },
+          {
+            "number": 3,
+            "text": "Master Password جدید را وارد کنید",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "اگه به لیست دیتابیس‌ها دسترسی پیدا کردید، Master Password تغییر کرده ✅",
+            "code": ""
+          }
+        ]
+      },
+      {
+        "title": "🆘 عیب‌یابی مشکلات رایج",
+        "steps": [
+          {
+            "number": 1,
+            "text": "❌ مشکل: Odoo استارت نمی‌شود بعد از تغییر",
+            "code": ""
+          },
+          {
+            "number": 2,
+            "text": "راه حل: لاگ‌های Odoo را چک کنید:",
+            "code": "tail -100 /var/log/odoo/odoo.log"
+          },
+          {
+            "number": 3,
+            "text": "❌ مشکل: فایل /etc/odoo.conf وجود ندارد",
+            "code": ""
+          },
+          {
+            "number": 4,
+            "text": "راه حل: فایل کانفیگ ممکنه در مسیر دیگری باشه:",
+            "code": "find / -name odoo.conf 2>/dev/null"
+          },
+          {
+            "number": 5,
+            "text": "❌ مشکل: Master Password accept نمی‌شود",
+            "code": ""
+          },
+          {
+            "number": 6,
+            "text": "راه حل: Odoo رو ری‌استارت کنید و چند ثانیه صبر کنید:",
+            "code": "systemctl restart odoo\nsleep 5\nsystemctl status odoo"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "Master Password",
+      "ریست پسورد",
+      "IranServer",
+      "admin_passwd",
+      "امنیت",
+      "راهنما"
+    ],
+    "dateAdded": "2026-02-09T07:30:00"
   }
 ]
